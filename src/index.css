@@ -640,6 +640,21 @@ tbody tr:last-child td {
   gap: 16px;
 }
 
+.setting-token {
+  margin-top: 12px;
+}
+
+.setting-token input {
+  min-width: 180px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-family: monospace;
+}
+
 .setting-row span {
   font-size: 0.9rem;
   color: var(--text-primary);

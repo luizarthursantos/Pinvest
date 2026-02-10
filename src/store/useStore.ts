@@ -10,6 +10,7 @@ interface AppState {
   widgets: AnalyticsWidget[];
   theme: Theme;
   priceSource: PriceSource;
+  brapiToken: string;
   activeTab: 'positions' | 'analytics' | 'settings';
 
   setActiveTab: (tab: AppState['activeTab']) => void;
@@ -24,6 +25,7 @@ interface AppState {
   removeWidget: (id: string) => void;
   setTheme: (t: Theme) => void;
   setPriceSource: (s: PriceSource) => void;
+  setBrapiToken: (t: string) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -36,6 +38,7 @@ export const useStore = create<AppState>()(
       widgets: [],
       theme: 'light',
       priceSource: 'brapi',
+      brapiToken: '',
       activeTab: 'positions',
 
       setActiveTab: (tab) => set({ activeTab: tab }),
@@ -92,6 +95,8 @@ export const useStore = create<AppState>()(
       setTheme: (t) => set({ theme: t }),
 
       setPriceSource: (s) => set({ priceSource: s }),
+
+      setBrapiToken: (t) => set({ brapiToken: t }),
     }),
     { name: 'pinvest-storage' }
   )

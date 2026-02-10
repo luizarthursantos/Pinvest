@@ -2,7 +2,7 @@ import { useStore } from '../store/useStore';
 import type { Theme, PriceSource } from '../types';
 
 export default function SettingsTab() {
-  const { theme, setTheme, priceSource, setPriceSource } = useStore();
+  const { theme, setTheme, priceSource, setPriceSource, brapiToken, setBrapiToken } = useStore();
 
   return (
     <div className="settings-tab">
@@ -30,9 +30,26 @@ export default function SettingsTab() {
         </label>
         <p className="text-muted">
           {priceSource === 'brapi'
-            ? 'BRAPI provides real-time stock quotes. Use tickers like PETR4, VALE3, AAPL.'
+            ? 'BRAPI provides real-time stock quotes. Use tickers like PETR4, VALE3, ITUB4 (without .SA).'
             : 'Yahoo Finance provides global stock data. Use tickers like AAPL, GOOGL, PETR4.SA.'}
         </p>
+
+        {priceSource === 'brapi' && (
+          <div className="setting-token">
+            <label className="setting-row">
+              <span>BRAPI Token</span>
+              <input
+                type="text"
+                value={brapiToken}
+                onChange={(e) => setBrapiToken(e.target.value.trim())}
+                placeholder="Your brapi.dev token"
+              />
+            </label>
+            <p className="text-muted">
+              Get a free token at brapi.dev. Required for price quotes.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

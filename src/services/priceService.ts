@@ -4,7 +4,7 @@ function stripSaSuffix(ticker: string): string {
   return ticker.replace(/\.SA$/i, '');
 }
 
-async function fetchBrapi(tickers: string[]): Promise<Record<string, number>> {
+async function fetchBrapi(tickers: string[], token: string): Promise<Record<string, number>> {
   const result: Record<string, number> = {};
 
   // BRAPI uses tickers without .SA suffix
@@ -17,8 +17,9 @@ async function fetchBrapi(tickers: string[]): Promise<Record<string, number>> {
   }
 
   const joined = brapiTickers.join(',');
+  const tokenParam = token ? `&token=${encodeURIComponent(token)}` : '';
   try {
-    const resp = await fetch(`https://brapi.dev/api/quote/${joined}?fundamental=false`);
+    const resp = await fetch(`https://brapi.dev/api/quote/${joined}?fundamental=false${tokenParam}`);
     if (!resp.ok) throw new Error(`brapi ${resp.status}`);
     const data = await resp.json();
     for (const item of data.results ?? []) {
@@ -55,17 +56,18 @@ async function fetchYahoo(tickers: string[]): Promise<Record<string, number>> {
 
 export async function fetchPrices(
   tickers: string[],
-  source: PriceSource
+  source: PriceSource,
+  brapiToken: string = ''
 ): Promise<Record<string, number>> {
   if (tickers.length === 0) return {};
   const unique = [...new Set(tickers.map((t) => t.toUpperCase()))];
 
   switch (source) {
     case 'brapi':
-      return fetchBrapi(unique);
+      return fetchBrapi(unique, brapiToken);
     case 'yahoo':
       return fetchYahoo(unique);
     default:
-      return fetchBrapi(unique);
+      return fetchBrapi(unique, brapiToken);
   }
 }
