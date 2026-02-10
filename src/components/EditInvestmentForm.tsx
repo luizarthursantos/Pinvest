@@ -82,7 +82,7 @@ export default function EditInvestmentForm({ investmentId, onClose }: Props) {
         <label>Quantity</label>
         <input
           type="number"
-          step="0.0001"
+          step="any"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           required

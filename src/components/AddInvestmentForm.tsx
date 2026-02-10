@@ -81,7 +81,7 @@ export default function AddInvestmentForm({ onClose }: { onClose: () => void }) 
         <label>Quantity</label>
         <input
           type="number"
-          step="0.0001"
+          step="any"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           required

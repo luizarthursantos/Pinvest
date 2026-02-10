@@ -1,15 +1,30 @@
 import type { PriceSource } from '../types';
 
+function stripSaSuffix(ticker: string): string {
+  return ticker.replace(/\.SA$/i, '');
+}
+
 async function fetchBrapi(tickers: string[]): Promise<Record<string, number>> {
   const result: Record<string, number> = {};
-  const joined = tickers.join(',');
+
+  // BRAPI uses tickers without .SA suffix
+  const tickerMap: Record<string, string> = {};
+  const brapiTickers: string[] = [];
+  for (const t of tickers) {
+    const stripped = stripSaSuffix(t);
+    tickerMap[stripped.toUpperCase()] = t;
+    brapiTickers.push(stripped);
+  }
+
+  const joined = brapiTickers.join(',');
   try {
     const resp = await fetch(`https://brapi.dev/api/quote/${joined}?fundamental=false`);
     if (!resp.ok) throw new Error(`brapi ${resp.status}`);
     const data = await resp.json();
     for (const item of data.results ?? []) {
       if (item.symbol && typeof item.regularMarketPrice === 'number') {
-        result[item.symbol.toUpperCase()] = item.regularMarketPrice;
+        const original = tickerMap[item.symbol.toUpperCase()] ?? item.symbol.toUpperCase();
+        result[original.toUpperCase()] = item.regularMarketPrice;
       }
     }
   } catch (err) {
