@@ -21,8 +21,8 @@ export default function EditInvestmentForm({ investmentId, onClose }: Props) {
   const [group, setGroup] = useState(inv?.group ?? '');
   const [subgroup, setSubgroup] = useState(inv?.subgroup ?? '');
   const [custody, setCustody] = useState(inv?.custody ?? '');
-  const [targetTotal, setTargetTotal] = useState(String(inv?.targetTotalWeight ?? ''));
-  const [targetGroup, setTargetGroup] = useState(String(inv?.targetGroupWeight ?? ''));
+  const [targetTotal, setTargetTotal] = useState(inv?.targetTotalWeight != null ? String(inv.targetTotalWeight) : '');
+  const [targetGroup, setTargetGroup] = useState(inv?.targetGroupWeight != null ? String(inv.targetGroupWeight) : '');
 
   if (!inv) return null;
 
@@ -39,8 +39,8 @@ export default function EditInvestmentForm({ investmentId, onClose }: Props) {
       group,
       subgroup,
       custody,
-      targetTotalWeight: parseFloat(targetTotal) || 0,
-      targetGroupWeight: parseFloat(targetGroup) || 0,
+      targetTotalWeight: targetTotal !== '' ? parseFloat(targetTotal) : undefined,
+      targetGroupWeight: targetGroup !== '' ? parseFloat(targetGroup) : undefined,
     });
     onClose();
   };

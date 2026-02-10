@@ -1,11 +1,17 @@
 import type { PriceSource } from '../types';
 
+export interface PriceData {
+  price: number;
+  change?: number;
+  changePercent?: number;
+}
+
 function stripSaSuffix(ticker: string): string {
   return ticker.replace(/\.SA$/i, '');
 }
 
-async function fetchBrapi(tickers: string[], token: string): Promise<Record<string, number>> {
-  const result: Record<string, number> = {};
+async function fetchBrapi(tickers: string[], token: string): Promise<Record<string, PriceData>> {
+  const result: Record<string, PriceData> = {};
 
   // BRAPI uses tickers without .SA suffix
   const tickerMap: Record<string, string> = {};
@@ -25,7 +31,11 @@ async function fetchBrapi(tickers: string[], token: string): Promise<Record<stri
     for (const item of data.results ?? []) {
       if (item.symbol && typeof item.regularMarketPrice === 'number') {
         const original = tickerMap[item.symbol.toUpperCase()] ?? item.symbol.toUpperCase();
-        result[original.toUpperCase()] = item.regularMarketPrice;
+        result[original.toUpperCase()] = {
+          price: item.regularMarketPrice,
+          change: typeof item.regularMarketChange === 'number' ? item.regularMarketChange : undefined,
+          changePercent: typeof item.regularMarketChangePercent === 'number' ? item.regularMarketChangePercent : undefined,
+        };
       }
     }
   } catch (err) {
@@ -34,8 +44,8 @@ async function fetchBrapi(tickers: string[], token: string): Promise<Record<stri
   return result;
 }
 
-async function fetchYahoo(tickers: string[]): Promise<Record<string, number>> {
-  const result: Record<string, number> = {};
+async function fetchYahoo(tickers: string[]): Promise<Record<string, PriceData>> {
+  const result: Record<string, PriceData> = {};
   const joined = tickers.join(',');
   try {
     const resp = await fetch(
@@ -45,7 +55,11 @@ async function fetchYahoo(tickers: string[]): Promise<Record<string, number>> {
     const data = await resp.json();
     for (const item of data.quoteResponse?.result ?? []) {
       if (item.symbol && typeof item.regularMarketPrice === 'number') {
-        result[item.symbol.toUpperCase()] = item.regularMarketPrice;
+        result[item.symbol.toUpperCase()] = {
+          price: item.regularMarketPrice,
+          change: typeof item.regularMarketChange === 'number' ? item.regularMarketChange : undefined,
+          changePercent: typeof item.regularMarketChangePercent === 'number' ? item.regularMarketChangePercent : undefined,
+        };
       }
     }
   } catch (err) {
@@ -58,7 +72,7 @@ export async function fetchPrices(
   tickers: string[],
   source: PriceSource,
   brapiToken: string = ''
-): Promise<Record<string, number>> {
+): Promise<Record<string, PriceData>> {
   if (tickers.length === 0) return {};
   const unique = [...new Set(tickers.map((t) => t.toUpperCase()))];
 

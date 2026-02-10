@@ -10,7 +10,7 @@ export default function SettingsTab() {
     groups, addGroup, renameGroup, removeGroup,
     subgroups, addSubgroup, renameSubgroup, removeSubgroup,
     custodies, addCustody, renameCustody, removeCustody,
-    investments, importInvestments, clearAllData,
+    investments, widgets, importInvestments, importWidgets, clearAllData,
   } = useStore();
 
   const fileRef = useRef<HTMLInputElement>(null);
@@ -19,9 +19,12 @@ export default function SettingsTab() {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const imported = await importFromXlsx(file);
-      importInvestments(imported);
-      alert(`Imported ${imported.length} investments.`);
+      const result = await importFromXlsx(file);
+      importInvestments(result.investments);
+      if (result.widgets.length > 0) importWidgets(result.widgets);
+      const parts = [`${result.investments.length} investments`];
+      if (result.widgets.length > 0) parts.push(`${result.widgets.length} widgets`);
+      alert(`Imported ${parts.join(' and ')}.`);
     } catch {
       alert('Failed to import file.');
     }
@@ -79,7 +82,7 @@ export default function SettingsTab() {
       <div className="settings-section">
         <h3>Import / Export</h3>
         <div className="setting-buttons">
-          <button className="btn-secondary" onClick={() => exportToXlsx(investments)}>
+          <button className="btn-secondary" onClick={() => exportToXlsx(investments, widgets)}>
             Export XLSX
           </button>
           <button className="btn-secondary" onClick={() => fileRef.current?.click()}>

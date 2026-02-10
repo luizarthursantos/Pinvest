@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -48,20 +48,6 @@ function applyFilters(investments: Investment[], filters: Record<string, string[
 
 const RADIAN = Math.PI / 180;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderPieLabel(props: any) {
-  const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-  if (percent < 0.03) return null;
-  return (
-    <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={600}>
-      {`${(percent * 100).toFixed(1)}%`}
-    </text>
-  );
-}
-
 export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
   const investments = useStore((s) => s.investments);
 
@@ -84,11 +70,36 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
   const total = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
 
   const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  const fmtTotal = (n: number) => Math.round(n).toLocaleString();
+
+  const sliceLabels = widget.sliceLabels ?? ['percent'];
+  const showLegend = widget.showLegend ?? true;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderPieLabel = useCallback((props: any) => {
+    const { cx, cy, midAngle, innerRadius, outerRadius, percent, name, value } = props;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    if (percent < 0.03) return null;
+
+    const parts: string[] = [];
+    if (sliceLabels.includes('name')) parts.push(name);
+    if (sliceLabels.includes('value')) parts.push(fmt(value));
+    if (sliceLabels.includes('percent')) parts.push(`${(percent * 100).toFixed(1)}%`);
+    if (parts.length === 0) return null;
+
+    return (
+      <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
+        {parts.join(' ')}
+      </text>
+    );
+  }, [sliceLabels]);
 
   if (widget.chartType === 'pie') {
     return (
       <div>
-        <div className="chart-total">Total: {fmt(total)}</div>
+        <div className="chart-total">Total: {fmtTotal(total)}</div>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={renderPieLabel}>
@@ -97,7 +108,7 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
               ))}
             </Pie>
             <Tooltip formatter={(val) => fmt(Number(val))} />
-            <Legend />
+            {showLegend && <Legend />}
           </PieChart>
         </ResponsiveContainer>
       </div>
@@ -106,7 +117,7 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
 
   return (
     <div>
-      <div className="chart-total">Total: {fmt(total)}</div>
+      <div className="chart-total">Total: {fmtTotal(total)}</div>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />

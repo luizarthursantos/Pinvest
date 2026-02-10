@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useStore } from '../store/useStore';
-import type { AnalyticsWidget } from '../types';
+import type { AnalyticsWidget, SliceLabelOption } from '../types';
 
 const CATEGORIES = ['group', 'subgroup', 'custody', 'type', 'name', 'ticker'];
 const METRICS = ['totalValue', 'quantity', 'currentPrice', 'pctTotal', 'pctGroup'];
@@ -34,6 +34,8 @@ export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
   const [rowCategory, setRowCategory] = useState('group');
   const [columnCategory, setColumnCategory] = useState('custody');
   const [filters, setFilters] = useState<Record<string, string[]>>({});
+  const [sliceLabels, setSliceLabels] = useState<SliceLabelOption[]>(['percent']);
+  const [showLegend, setShowLegend] = useState(true);
 
   const filterOptions: Record<string, string[]> = useMemo(() => ({
     group: groups,
@@ -63,7 +65,7 @@ export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
     e.preventDefault();
     let widget: AnalyticsWidget;
     if (kind === 'chart') {
-      widget = { id: uuid(), kind: 'chart', chartType, category, metric, filters };
+      widget = { id: uuid(), kind: 'chart', chartType, category, metric, filters, sliceLabels, showLegend };
     } else {
       widget = { id: uuid(), kind: 'table', rowCategory, columnCategory, metric, filters };
     }
@@ -96,6 +98,37 @@ export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
                 <option key={c} value={c}>{categoryLabel(c)}</option>
               ))}
             </select>
+
+            {chartType === 'pie' && (
+              <>
+                <label>Slice Caption</label>
+                <div className="filter-chips">
+                  {([['name', 'Name'], ['value', 'Value'], ['percent', 'Percentage']] as const).map(([key, lbl]) => (
+                    <label key={key} className="chip">
+                      <input
+                        type="checkbox"
+                        checked={sliceLabels.includes(key)}
+                        onChange={() => {
+                          setSliceLabels((prev) =>
+                            prev.includes(key) ? prev.filter((l) => l !== key) : [...prev, key]
+                          );
+                        }}
+                      />
+                      {lbl}
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <label className="chip" style={{ marginTop: 12 }}>
+              <input
+                type="checkbox"
+                checked={showLegend}
+                onChange={(e) => setShowLegend(e.target.checked)}
+              />
+              Show Legend
+            </label>
           </>
         )}
 

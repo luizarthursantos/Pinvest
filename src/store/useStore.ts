@@ -12,12 +12,13 @@ interface AppState {
   priceSource: PriceSource;
   brapiToken: string;
   activeTab: 'positions' | 'analytics' | 'settings';
+  positionColumns: string[];
 
   setActiveTab: (tab: AppState['activeTab']) => void;
   addInvestment: (inv: Investment) => void;
   updateInvestment: (id: string, updates: Partial<Investment>) => void;
   removeInvestment: (id: string) => void;
-  updatePrices: (prices: Record<string, number>) => void;
+  updatePrices: (prices: Record<string, { price: number; change?: number; changePercent?: number }>) => void;
   addGroup: (g: string) => void;
   addSubgroup: (s: string) => void;
   addCustody: (c: string) => void;
@@ -33,7 +34,9 @@ interface AppState {
   renameCustody: (oldName: string, newName: string) => void;
   removeCustody: (name: string) => void;
   importInvestments: (investments: Investment[]) => void;
+  importWidgets: (widgets: AnalyticsWidget[]) => void;
   clearAllData: () => void;
+  setPositionColumns: (cols: string[]) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -48,6 +51,7 @@ export const useStore = create<AppState>()(
       priceSource: 'brapi',
       brapiToken: '',
       activeTab: 'positions',
+      positionColumns: ['name', 'type', 'ticker', 'price', 'qty', 'totalValue', 'pctTotal', 'targetTotal', 'deltaTotal', 'group', 'pctGroup', 'targetGroup', 'deltaGroup', 'subgroup', 'custody'],
 
       setActiveTab: (tab) => set({ activeTab: tab }),
 
@@ -73,7 +77,14 @@ export const useStore = create<AppState>()(
         set((s) => ({
           investments: s.investments.map((i) => {
             if (i.type === 'stock' && i.ticker && prices[i.ticker] !== undefined) {
-              return { ...i, currentPrice: prices[i.ticker], lastPriceUpdate: new Date().toISOString() };
+              const pd = prices[i.ticker];
+              return {
+                ...i,
+                currentPrice: pd.price,
+                dailyChange: pd.change,
+                dailyChangePercent: pd.changePercent,
+                lastPriceUpdate: new Date().toISOString(),
+              };
             }
             return i;
           }),
@@ -154,8 +165,13 @@ export const useStore = create<AppState>()(
           return { investments: allInvestments, groups: allGroups, subgroups: allSubgroups, custodies: allCustodies };
         }),
 
+      importWidgets: (newWidgets) =>
+        set((s) => ({ widgets: [...s.widgets, ...newWidgets] })),
+
       clearAllData: () =>
         set({ investments: [], groups: [], subgroups: [], custodies: [], widgets: [] }),
+
+      setPositionColumns: (cols) => set({ positionColumns: cols }),
     }),
     { name: 'pinvest-storage' }
   )

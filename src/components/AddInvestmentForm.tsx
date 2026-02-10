@@ -33,8 +33,8 @@ export default function AddInvestmentForm({ onClose }: { onClose: () => void }) 
       group,
       subgroup,
       custody,
-      targetTotalWeight: parseFloat(targetTotal) || 0,
-      targetGroupWeight: parseFloat(targetGroup) || 0,
+      targetTotalWeight: targetTotal !== '' ? parseFloat(targetTotal) : undefined,
+      targetGroupWeight: targetGroup !== '' ? parseFloat(targetGroup) : undefined,
     });
     onClose();
   };
