@@ -1,5 +1,7 @@
+import { useRef } from 'react';
 import { useStore } from '../store/useStore';
 import ListEditor from './ListEditor';
+import { exportToXlsx, importFromXlsx } from '../services/xlsxService';
 import type { Theme, PriceSource } from '../types';
 
 export default function SettingsTab() {
@@ -8,7 +10,23 @@ export default function SettingsTab() {
     groups, addGroup, renameGroup, removeGroup,
     subgroups, addSubgroup, renameSubgroup, removeSubgroup,
     custodies, addCustody, renameCustody, removeCustody,
+    investments, importInvestments, clearAllData,
   } = useStore();
+
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const imported = await importFromXlsx(file);
+      importInvestments(imported);
+      alert(`Imported ${imported.length} investments.`);
+    } catch {
+      alert('Failed to import file.');
+    }
+    if (fileRef.current) fileRef.current.value = '';
+  };
 
   return (
     <div className="settings-tab">
@@ -59,10 +77,49 @@ export default function SettingsTab() {
       </div>
 
       <div className="settings-section">
+        <h3>Import / Export</h3>
+        <div className="setting-buttons">
+          <button className="btn-secondary" onClick={() => exportToXlsx(investments)}>
+            Export XLSX
+          </button>
+          <button className="btn-secondary" onClick={() => fileRef.current?.click()}>
+            Import XLSX
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".xlsx,.xls"
+            style={{ display: 'none' }}
+            onChange={handleImport}
+          />
+        </div>
+        <p className="text-muted">
+          Export your investments to a spreadsheet or import from one.
+        </p>
+      </div>
+
+      <div className="settings-section">
         <h3>Manage Lists</h3>
         <ListEditor title="Groups" items={groups} onRename={renameGroup} onRemove={removeGroup} onAdd={addGroup} />
         <ListEditor title="Subgroups" items={subgroups} onRename={renameSubgroup} onRemove={removeSubgroup} onAdd={addSubgroup} />
         <ListEditor title="Custodies" items={custodies} onRename={renameCustody} onRemove={removeCustody} onAdd={addCustody} />
+      </div>
+
+      <div className="settings-section settings-danger">
+        <h3>Danger Zone</h3>
+        <button
+          className="btn-primary btn-danger-fill"
+          onClick={() => {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+              clearAllData();
+            }
+          }}
+        >
+          Clear All Data
+        </button>
+        <p className="text-muted">
+          Permanently deletes all investments, groups, subgroups, custodies, and widgets.
+        </p>
       </div>
     </div>
   );

@@ -33,6 +33,7 @@ interface AppState {
   renameCustody: (oldName: string, newName: string) => void;
   removeCustody: (name: string) => void;
   importInvestments: (investments: Investment[]) => void;
+  clearAllData: () => void;
 }
 
 export const useStore = create<AppState>()(
@@ -152,6 +153,9 @@ export const useStore = create<AppState>()(
           const allCustodies = [...new Set([...s.custodies, ...newInvestments.map((i) => i.custody).filter(Boolean)])];
           return { investments: allInvestments, groups: allGroups, subgroups: allSubgroups, custodies: allCustodies };
         }),
+
+      clearAllData: () =>
+        set({ investments: [], groups: [], subgroups: [], custodies: [], widgets: [] }),
     }),
     { name: 'pinvest-storage' }
   )

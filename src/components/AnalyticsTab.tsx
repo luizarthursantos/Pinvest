@@ -27,14 +27,25 @@ export default function AnalyticsTab() {
   const widgets = useStore((s) => s.widgets);
   const removeWidget = useStore((s) => s.removeWidget);
   const [showAdd, setShowAdd] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   return (
     <div className="analytics-tab">
       <div className="tab-header">
         <h2>Analytics</h2>
-        <button className="btn-primary" onClick={() => setShowAdd(true)}>
-          + Add Widget
-        </button>
+        <div className="tab-actions">
+          <button className="btn-primary" onClick={() => setShowAdd(true)}>
+            + Add Widget
+          </button>
+          {widgets.length > 0 && (
+            <button
+              className={`btn-secondary ${editMode ? 'btn-active' : ''}`}
+              onClick={() => setEditMode(!editMode)}
+            >
+              {editMode ? 'Done' : 'Edit'}
+            </button>
+          )}
+        </div>
       </div>
 
       {widgets.length === 0 ? (
@@ -51,13 +62,15 @@ export default function AnalyticsTab() {
                     ? `${w.chartType === 'pie' ? 'Pie' : 'Bar'} Chart — ${categoryLabel(w.category)} by ${metricLabel(w.metric)}`
                     : `Pivot — ${categoryLabel(w.rowCategory)} x ${categoryLabel(w.columnCategory)} (${metricLabel(w.metric)})`}
                 </span>
-                <button
-                  className="btn-icon btn-danger"
-                  title="Remove widget"
-                  onClick={() => removeWidget(w.id)}
-                >
-                  &#10005;
-                </button>
+                {editMode && (
+                  <button
+                    className="btn-icon btn-danger"
+                    title="Remove widget"
+                    onClick={() => removeWidget(w.id)}
+                  >
+                    &#10005;
+                  </button>
+                )}
               </div>
               <div className="widget-body">
                 {w.kind === 'chart' ? (

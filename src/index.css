@@ -677,6 +677,48 @@ tbody tr:last-child td {
   margin-top: 8px;
 }
 
+/* ===== Active Button ===== */
+.btn-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.btn-active:hover {
+  background: var(--accent-hover);
+}
+
+/* ===== Danger Fill Button ===== */
+.btn-danger-fill {
+  background: var(--danger);
+  border: none;
+}
+
+.btn-danger-fill:hover {
+  background: var(--danger-hover);
+}
+
+/* ===== Settings Buttons Row ===== */
+.setting-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ===== Settings Danger Zone ===== */
+.settings-danger {
+  border-color: var(--danger);
+}
+
+/* ===== Chart Total ===== */
+.chart-total {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
 /* ===== Clickable Row ===== */
 .clickable-row {
   cursor: pointer;

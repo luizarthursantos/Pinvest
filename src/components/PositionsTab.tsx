@@ -1,19 +1,17 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { usePriceRefresh } from '../hooks/usePriceRefresh';
-import { exportToXlsx, importFromXlsx } from '../services/xlsxService';
 import AddInvestmentForm from './AddInvestmentForm';
 import EditInvestmentForm from './EditInvestmentForm';
 
 export default function PositionsTab() {
   const investments = useStore((s) => s.investments);
   const removeInvestment = useStore((s) => s.removeInvestment);
-  const importInvestments = useStore((s) => s.importInvestments);
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const refresh = usePriceRefresh();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     refresh();
@@ -24,19 +22,6 @@ export default function PositionsTab() {
     setRefreshing(true);
     await refresh();
     setRefreshing(false);
-  };
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const imported = await importFromXlsx(file);
-      importInvestments(imported);
-    } catch (err) {
-      alert('Failed to import file. Make sure it is a valid .xlsx file.');
-      console.error(err);
-    }
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const totalValue = useMemo(
@@ -66,31 +51,24 @@ export default function PositionsTab() {
         <h2>Positions</h2>
         <div className="tab-actions">
           <button className="btn-primary" onClick={() => setShowAdd(true)}>
-            + Add Investment
+            + Add
           </button>
           <button className="btn-secondary" onClick={handleRefresh} disabled={refreshing}>
             {refreshing ? 'Refreshing...' : 'Refresh Prices'}
           </button>
-          <button className="btn-secondary" onClick={() => exportToXlsx(investments)} disabled={investments.length === 0}>
-            Export .xlsx
+          <button
+            className={`btn-secondary ${editMode ? 'btn-active' : ''}`}
+            onClick={() => setEditMode(!editMode)}
+          >
+            {editMode ? 'Done' : 'Edit'}
           </button>
-          <button className="btn-secondary" onClick={() => fileInputRef.current?.click()}>
-            Import .xlsx
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls"
-            onChange={handleImport}
-            style={{ display: 'none' }}
-          />
         </div>
       </div>
 
       <div className="summary-cards">
         <div className="card">
           <span className="card-label">Total Value</span>
-          <span className="card-value">{fmt(totalValue)}</span>
+          <span className="card-value">{Math.round(totalValue).toLocaleString()}</span>
         </div>
         <div className="card">
           <span className="card-label">Positions</span>
@@ -104,7 +82,7 @@ export default function PositionsTab() {
 
       {investments.length === 0 ? (
         <div className="empty-state">
-          <p>No investments yet. Click "Add Investment" to get started.</p>
+          <p>No investments yet. Click "+ Add" to get started.</p>
         </div>
       ) : (
         <div className="table-container">
@@ -126,7 +104,7 @@ export default function PositionsTab() {
                 <th>Delta Group</th>
                 <th>Subgroup</th>
                 <th>Custody</th>
-                <th>Actions</th>
+                {editMode && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -139,7 +117,11 @@ export default function PositionsTab() {
                 const deltaGrp = pctGroup - inv.targetGroupWeight;
 
                 return (
-                  <tr key={inv.id} className="clickable-row" onClick={() => setEditId(inv.id)}>
+                  <tr
+                    key={inv.id}
+                    className={editMode ? 'clickable-row' : ''}
+                    onClick={editMode ? () => setEditId(inv.id) : undefined}
+                  >
                     <td className="cell-name">{inv.name}</td>
                     <td>
                       <span className={`badge badge-${inv.type}`}>
@@ -163,20 +145,22 @@ export default function PositionsTab() {
                     </td>
                     <td>{inv.subgroup}</td>
                     <td>{inv.custody}</td>
-                    <td className="cell-actions" onClick={(e) => e.stopPropagation()}>
-                      <button className="btn-icon" title="Edit" onClick={() => setEditId(inv.id)}>
-                        &#9998;
-                      </button>
-                      <button
-                        className="btn-icon btn-danger"
-                        title="Remove"
-                        onClick={() => {
-                          if (confirm(`Remove "${inv.name}"?`)) removeInvestment(inv.id);
-                        }}
-                      >
-                        &#10005;
-                      </button>
-                    </td>
+                    {editMode && (
+                      <td className="cell-actions" onClick={(e) => e.stopPropagation()}>
+                        <button className="btn-icon" title="Edit" onClick={() => setEditId(inv.id)}>
+                          &#9998;
+                        </button>
+                        <button
+                          className="btn-icon btn-danger"
+                          title="Remove"
+                          onClick={() => {
+                            if (confirm(`Remove "${inv.name}"?`)) removeInvestment(inv.id);
+                          }}
+                        >
+                          &#10005;
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 );
               })}
