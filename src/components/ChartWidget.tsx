@@ -17,6 +17,8 @@ function getCategoryValue(inv: Investment, cat: string): string {
     case 'subgroup': return inv.subgroup;
     case 'custody': return inv.custody;
     case 'type': return inv.type;
+    case 'name': return inv.name;
+    case 'ticker': return inv.ticker || '-';
     default: return '';
   }
 }

@@ -16,7 +16,11 @@ function metricLabel(m: string) {
 }
 
 function categoryLabel(c: string) {
-  return c.charAt(0).toUpperCase() + c.slice(1);
+  switch (c) {
+    case 'name': return 'Name';
+    case 'ticker': return 'Ticker';
+    default: return c.charAt(0).toUpperCase() + c.slice(1);
+  }
 }
 
 export default function AnalyticsTab() {

@@ -26,6 +26,13 @@ interface AppState {
   setTheme: (t: Theme) => void;
   setPriceSource: (s: PriceSource) => void;
   setBrapiToken: (t: string) => void;
+  renameGroup: (oldName: string, newName: string) => void;
+  removeGroup: (name: string) => void;
+  renameSubgroup: (oldName: string, newName: string) => void;
+  removeSubgroup: (name: string) => void;
+  renameCustody: (oldName: string, newName: string) => void;
+  removeCustody: (name: string) => void;
+  importInvestments: (investments: Investment[]) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -97,6 +104,54 @@ export const useStore = create<AppState>()(
       setPriceSource: (s) => set({ priceSource: s }),
 
       setBrapiToken: (t) => set({ brapiToken: t }),
+
+      renameGroup: (oldName, newName) =>
+        set((s) => ({
+          groups: s.groups.map((g) => (g === oldName ? newName : g)),
+          investments: s.investments.map((i) =>
+            i.group === oldName ? { ...i, group: newName } : i
+          ),
+        })),
+
+      removeGroup: (name) =>
+        set((s) => ({
+          groups: s.groups.filter((g) => g !== name),
+        })),
+
+      renameSubgroup: (oldName, newName) =>
+        set((s) => ({
+          subgroups: s.subgroups.map((g) => (g === oldName ? newName : g)),
+          investments: s.investments.map((i) =>
+            i.subgroup === oldName ? { ...i, subgroup: newName } : i
+          ),
+        })),
+
+      removeSubgroup: (name) =>
+        set((s) => ({
+          subgroups: s.subgroups.filter((g) => g !== name),
+        })),
+
+      renameCustody: (oldName, newName) =>
+        set((s) => ({
+          custodies: s.custodies.map((g) => (g === oldName ? newName : g)),
+          investments: s.investments.map((i) =>
+            i.custody === oldName ? { ...i, custody: newName } : i
+          ),
+        })),
+
+      removeCustody: (name) =>
+        set((s) => ({
+          custodies: s.custodies.filter((g) => g !== name),
+        })),
+
+      importInvestments: (newInvestments) =>
+        set((s) => {
+          const allInvestments = [...s.investments, ...newInvestments];
+          const allGroups = [...new Set([...s.groups, ...newInvestments.map((i) => i.group).filter(Boolean)])];
+          const allSubgroups = [...new Set([...s.subgroups, ...newInvestments.map((i) => i.subgroup).filter(Boolean)])];
+          const allCustodies = [...new Set([...s.custodies, ...newInvestments.map((i) => i.custody).filter(Boolean)])];
+          return { investments: allInvestments, groups: allGroups, subgroups: allSubgroups, custodies: allCustodies };
+        }),
     }),
     { name: 'pinvest-storage' }
   )

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useStore } from '../store/useStore';
 import type { AnalyticsWidget } from '../types';
 
-const CATEGORIES = ['group', 'subgroup', 'custody', 'type'];
+const CATEGORIES = ['group', 'subgroup', 'custody', 'type', 'name', 'ticker'];
 const METRICS = ['totalValue', 'quantity', 'currentPrice', 'pctTotal', 'pctGroup'];
 
 function metricLabel(m: string) {
@@ -18,11 +18,15 @@ function metricLabel(m: string) {
 }
 
 function categoryLabel(c: string) {
-  return c.charAt(0).toUpperCase() + c.slice(1);
+  switch (c) {
+    case 'name': return 'Name';
+    case 'ticker': return 'Ticker';
+    default: return c.charAt(0).toUpperCase() + c.slice(1);
+  }
 }
 
 export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
-  const { groups, subgroups, custodies, addWidget } = useStore();
+  const { groups, subgroups, custodies, investments, addWidget } = useStore();
   const [kind, setKind] = useState<'chart' | 'table'>('chart');
   const [chartType, setChartType] = useState<'pie' | 'bar'>('pie');
   const [category, setCategory] = useState('group');
@@ -31,12 +35,16 @@ export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
   const [columnCategory, setColumnCategory] = useState('custody');
   const [filters, setFilters] = useState<Record<string, string[]>>({});
 
-  const filterOptions: Record<string, string[]> = {
+  const filterOptions: Record<string, string[]> = useMemo(() => ({
     group: groups,
     subgroup: subgroups,
     custody: custodies,
     type: ['stock', 'other'],
-  };
+    name: [...new Set(investments.map((i) => i.name))],
+    ticker: [...new Set(investments.filter((i) => i.ticker).map((i) => i.ticker!))],
+  }), [groups, subgroups, custodies, investments]);
+
+  const FILTER_CATEGORIES = ['group', 'subgroup', 'custody', 'type'];
 
   const toggleFilter = (cat: string, val: string) => {
     setFilters((prev) => {
@@ -118,7 +126,7 @@ export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
 
         <fieldset className="filter-fieldset">
           <legend>Filters (optional)</legend>
-          {CATEGORIES.map((cat) => (
+          {FILTER_CATEGORIES.map((cat) => (
             <div key={cat} className="filter-group">
               <strong>{categoryLabel(cat)}</strong>
               <div className="filter-chips">

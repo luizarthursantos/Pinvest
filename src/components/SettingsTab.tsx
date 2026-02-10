@@ -1,8 +1,14 @@
 import { useStore } from '../store/useStore';
+import ListEditor from './ListEditor';
 import type { Theme, PriceSource } from '../types';
 
 export default function SettingsTab() {
-  const { theme, setTheme, priceSource, setPriceSource, brapiToken, setBrapiToken } = useStore();
+  const {
+    theme, setTheme, priceSource, setPriceSource, brapiToken, setBrapiToken,
+    groups, addGroup, renameGroup, removeGroup,
+    subgroups, addSubgroup, renameSubgroup, removeSubgroup,
+    custodies, addCustody, renameCustody, removeCustody,
+  } = useStore();
 
   return (
     <div className="settings-tab">
@@ -50,6 +56,13 @@ export default function SettingsTab() {
             </p>
           </div>
         )}
+      </div>
+
+      <div className="settings-section">
+        <h3>Manage Lists</h3>
+        <ListEditor title="Groups" items={groups} onRename={renameGroup} onRemove={removeGroup} onAdd={addGroup} />
+        <ListEditor title="Subgroups" items={subgroups} onRename={renameSubgroup} onRemove={removeSubgroup} onAdd={addSubgroup} />
+        <ListEditor title="Custodies" items={custodies} onRename={renameCustody} onRemove={removeCustody} onAdd={addCustody} />
       </div>
     </div>
   );

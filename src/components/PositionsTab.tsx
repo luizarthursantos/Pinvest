@@ -1,16 +1,19 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { usePriceRefresh } from '../hooks/usePriceRefresh';
+import { exportToXlsx, importFromXlsx } from '../services/xlsxService';
 import AddInvestmentForm from './AddInvestmentForm';
 import EditInvestmentForm from './EditInvestmentForm';
 
 export default function PositionsTab() {
   const investments = useStore((s) => s.investments);
   const removeInvestment = useStore((s) => s.removeInvestment);
+  const importInvestments = useStore((s) => s.importInvestments);
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const refresh = usePriceRefresh();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     refresh();
@@ -21,6 +24,19 @@ export default function PositionsTab() {
     setRefreshing(true);
     await refresh();
     setRefreshing(false);
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const imported = await importFromXlsx(file);
+      importInvestments(imported);
+    } catch (err) {
+      alert('Failed to import file. Make sure it is a valid .xlsx file.');
+      console.error(err);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const totalValue = useMemo(
@@ -55,6 +71,19 @@ export default function PositionsTab() {
           <button className="btn-secondary" onClick={handleRefresh} disabled={refreshing}>
             {refreshing ? 'Refreshing...' : 'Refresh Prices'}
           </button>
+          <button className="btn-secondary" onClick={() => exportToXlsx(investments)} disabled={investments.length === 0}>
+            Export .xlsx
+          </button>
+          <button className="btn-secondary" onClick={() => fileInputRef.current?.click()}>
+            Import .xlsx
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleImport}
+            style={{ display: 'none' }}
+          />
         </div>
       </div>
 
@@ -110,7 +139,7 @@ export default function PositionsTab() {
                 const deltaGrp = pctGroup - inv.targetGroupWeight;
 
                 return (
-                  <tr key={inv.id}>
+                  <tr key={inv.id} className="clickable-row" onClick={() => setEditId(inv.id)}>
                     <td className="cell-name">{inv.name}</td>
                     <td>
                       <span className={`badge badge-${inv.type}`}>
@@ -134,7 +163,7 @@ export default function PositionsTab() {
                     </td>
                     <td>{inv.subgroup}</td>
                     <td>{inv.custody}</td>
-                    <td className="cell-actions">
+                    <td className="cell-actions" onClick={(e) => e.stopPropagation()}>
                       <button className="btn-icon" title="Edit" onClick={() => setEditId(inv.id)}>
                         &#9998;
                       </button>
