@@ -39,6 +39,7 @@ export function exportToXlsx(investments: Investment[], widgets: AnalyticsWidget
       filters: JSON.stringify(w.filters),
       sliceLabels: w.kind === 'chart' ? (w.sliceLabels ?? []).join(',') : '',
       showLegend: w.kind === 'chart' ? String(w.showLegend ?? true) : '',
+      labelPosition: w.kind === 'chart' ? (w.labelPosition ?? 'inside') : '',
     }));
     const wsWidgets = XLSX.utils.json_to_sheet(widgetRows);
     XLSX.utils.book_append_sheet(wb, wsWidgets, 'Widgets');
@@ -105,6 +106,7 @@ export function importFromXlsx(file: File): Promise<ImportResult> {
                 filters,
                 sliceLabels: sl ? sl.split(',').filter(Boolean) as ('name' | 'value' | 'percent')[] : ['percent'],
                 showLegend: String(wr.showLegend) !== 'false',
+                labelPosition: (String(wr.labelPosition || 'inside') as 'inside' | 'outside'),
               });
             } else if (kind === 'table') {
               widgets.push({

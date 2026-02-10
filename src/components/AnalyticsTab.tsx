@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import AddWidgetForm from './AddWidgetForm';
+import EditWidgetForm from './EditWidgetForm';
 import ChartWidget from './ChartWidget';
 import PivotTableWidget from './PivotTableWidget';
 
@@ -28,6 +29,7 @@ export default function AnalyticsTab() {
   const removeWidget = useStore((s) => s.removeWidget);
   const [showAdd, setShowAdd] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [editWidgetId, setEditWidgetId] = useState<string | null>(null);
 
   return (
     <div className="analytics-tab">
@@ -55,7 +57,11 @@ export default function AnalyticsTab() {
       ) : (
         <div className="widgets-grid">
           {widgets.map((w) => (
-            <div key={w.id} className="widget-card">
+            <div
+              key={w.id}
+              className={`widget-card${editMode ? ' clickable-card' : ''}`}
+              onClick={editMode ? () => setEditWidgetId(w.id) : undefined}
+            >
               <div className="widget-header">
                 <span className="widget-title">
                   {w.kind === 'chart'
@@ -66,7 +72,7 @@ export default function AnalyticsTab() {
                   <button
                     className="btn-icon btn-danger"
                     title="Remove widget"
-                    onClick={() => removeWidget(w.id)}
+                    onClick={(e) => { e.stopPropagation(); removeWidget(w.id); }}
                   >
                     &#10005;
                   </button>
@@ -85,6 +91,7 @@ export default function AnalyticsTab() {
       )}
 
       {showAdd && <AddWidgetForm onClose={() => setShowAdd(false)} />}
+      {editWidgetId && <EditWidgetForm widgetId={editWidgetId} onClose={() => setEditWidgetId(null)} />}
     </div>
   );
 }

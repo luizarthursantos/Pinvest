@@ -69,18 +69,18 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
 
   const total = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
 
-  const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  const fmt = widget.metric === 'totalValue'
+    ? (n: number) => Math.round(n).toLocaleString()
+    : (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
   const fmtTotal = (n: number) => Math.round(n).toLocaleString();
 
   const sliceLabels = widget.sliceLabels ?? ['percent'];
   const showLegend = widget.showLegend ?? true;
+  const labelPosition = widget.labelPosition ?? 'inside';
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderPieLabel = useCallback((props: any) => {
     const { cx, cy, midAngle, innerRadius, outerRadius, percent, name, value } = props;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
     if (percent < 0.03) return null;
 
     const parts: string[] = [];
@@ -89,12 +89,27 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
     if (sliceLabels.includes('percent')) parts.push(`${(percent * 100).toFixed(1)}%`);
     if (parts.length === 0) return null;
 
+    if (labelPosition === 'outside') {
+      const radius = outerRadius + 20;
+      const x = cx + radius * Math.cos(-midAngle * RADIAN);
+      const y = cy + radius * Math.sin(-midAngle * RADIAN);
+      const anchor = x > cx ? 'start' : 'end';
+      return (
+        <text x={x} y={y} fill="var(--text)" textAnchor={anchor} dominantBaseline="central" fontSize={11} fontWeight={600}>
+          {parts.join(' ')}
+        </text>
+      );
+    }
+
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
     return (
       <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
         {parts.join(' ')}
       </text>
     );
-  }, [sliceLabels]);
+  }, [sliceLabels, labelPosition]);
 
   if (widget.chartType === 'pie') {
     return (
@@ -102,7 +117,16 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
         <div className="chart-total">Total: {fmtTotal(total)}</div>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
-            <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={renderPieLabel}>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={labelPosition === 'outside' ? 80 : 100}
+              labelLine={labelPosition === 'outside'}
+              label={renderPieLabel}
+            >
               {data.map((_, i) => (
                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
               ))}

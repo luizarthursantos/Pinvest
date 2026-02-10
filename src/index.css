@@ -724,6 +724,15 @@ tbody tr:last-child td {
   cursor: pointer;
 }
 
+.clickable-card {
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.clickable-card:hover {
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
 /* ===== List Editor ===== */
 .list-editor {
   margin-top: 16px;

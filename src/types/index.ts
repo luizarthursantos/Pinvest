@@ -22,6 +22,8 @@ export type PriceSource = 'brapi' | 'yahoo';
 
 export type SliceLabelOption = 'name' | 'value' | 'percent';
 
+export type LabelPosition = 'inside' | 'outside';
+
 export interface AnalyticsChart {
   id: string;
   kind: 'chart';
@@ -31,6 +33,7 @@ export interface AnalyticsChart {
   filters: Record<string, string[]>;
   sliceLabels?: SliceLabelOption[];
   showLegend?: boolean;
+  labelPosition?: LabelPosition;
 }
 
 export interface AnalyticsTable {

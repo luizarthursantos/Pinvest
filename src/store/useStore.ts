@@ -23,6 +23,7 @@ interface AppState {
   addSubgroup: (s: string) => void;
   addCustody: (c: string) => void;
   addWidget: (w: AnalyticsWidget) => void;
+  updateWidget: (id: string, updates: Partial<AnalyticsWidget>) => void;
   removeWidget: (id: string) => void;
   setTheme: (t: Theme) => void;
   setPriceSource: (s: PriceSource) => void;
@@ -107,6 +108,11 @@ export const useStore = create<AppState>()(
 
       addWidget: (w) =>
         set((s) => ({ widgets: [...s.widgets, w] })),
+
+      updateWidget: (id, updates) =>
+        set((s) => ({
+          widgets: s.widgets.map((w) => (w.id === id ? { ...w, ...updates } as AnalyticsWidget : w)),
+        })),
 
       removeWidget: (id) =>
         set((s) => ({ widgets: s.widgets.filter((w) => w.id !== id) })),
