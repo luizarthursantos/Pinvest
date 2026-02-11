@@ -112,8 +112,8 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
     );
   }, [sliceLabels, labelPosition]);
 
-  const pieH = compact ? 200 : 300;
-  const pieRadius = compact ? (labelPosition === 'outside' ? 55 : 70) : (labelPosition === 'outside' ? 80 : 100);
+  const pieH = compact ? 160 : 300;
+  const pieRadius = compact ? (labelPosition === 'outside' ? 45 : 60) : (labelPosition === 'outside' ? 80 : 100);
 
   if (widget.chartType === 'pie') {
     return (
@@ -145,9 +145,9 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
 
   const rotateLabels = data.length > 5;
   const tickSize = compact ? 9 : (data.length > 10 ? 9 : 11);
-  const barHeight = compact ? (rotateLabels ? 200 : 160) : (rotateLabels ? 340 : 300);
+  const barHeight = compact ? (rotateLabels ? 160 : 130) : (rotateLabels ? 340 : 300);
   const barMargin = compact
-    ? { top: 4, right: 8, bottom: rotateLabels ? 50 : 4, left: 0 }
+    ? { top: 4, right: 8, bottom: rotateLabels ? 40 : 4, left: 0 }
     : rotateLabels ? { bottom: 60 } : undefined;
 
   return (
