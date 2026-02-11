@@ -49,7 +49,7 @@ function applyFilters(investments: Investment[], filters: Record<string, string[
 
 const RADIAN = Math.PI / 180;
 
-export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
+export default function ChartWidget({ widget, compact }: { widget: AnalyticsChart; compact?: boolean }) {
   const investments = useStore((s) => s.investments);
 
   const data = useMemo(() => {
@@ -112,11 +112,14 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
     );
   }, [sliceLabels, labelPosition]);
 
+  const pieH = compact ? 200 : 300;
+  const pieRadius = compact ? (labelPosition === 'outside' ? 55 : 70) : (labelPosition === 'outside' ? 80 : 100);
+
   if (widget.chartType === 'pie') {
     return (
       <div>
         <div className="chart-total">Total: {fmtTotal(total)}</div>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={pieH}>
           <PieChart>
             <Pie
               data={data}
@@ -124,7 +127,7 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
               nameKey="name"
               cx="50%"
               cy="50%"
-              outerRadius={labelPosition === 'outside' ? 80 : 100}
+              outerRadius={pieRadius}
               labelLine={labelPosition === 'outside'}
               label={renderPieLabel}
             >
@@ -133,7 +136,7 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
               ))}
             </Pie>
             <Tooltip formatter={(val) => fmt(Number(val))} />
-            {showLegend && <Legend />}
+            {showLegend && !compact && <Legend />}
           </PieChart>
         </ResponsiveContainer>
       </div>
@@ -141,7 +144,8 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
   }
 
   const rotateLabels = data.length > 5;
-  const barHeight = rotateLabels ? 340 : 300;
+  const tickSize = data.length > 10 ? 9 : 11;
+  const barHeight = compact ? (rotateLabels ? 220 : 180) : (rotateLabels ? 340 : 300);
 
   return (
     <div>
@@ -151,12 +155,12 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="name"
-            tick={{ fontSize: data.length > 10 ? 9 : 11 }}
+            tick={{ fontSize: tickSize }}
             angle={rotateLabels ? -45 : 0}
             textAnchor={rotateLabels ? 'end' : 'middle'}
             interval={0}
           />
-          <YAxis />
+          <YAxis tick={{ fontSize: tickSize }} />
           <Tooltip formatter={(val) => fmt(Number(val))} />
           <Bar dataKey="value" fill="#4f46e5">
             {data.map((_, i) => (
