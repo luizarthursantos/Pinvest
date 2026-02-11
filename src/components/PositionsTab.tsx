@@ -85,7 +85,7 @@ const ALL_COLUMNS: ColumnDef[] = [
       const v = inv.dailyChange;
       if (v == null) return '-';
       const totalChange = v * inv.quantity;
-      return <span className={ctx.deltaClass(v)}>{Math.round(totalChange).toLocaleString()}</span>;
+      return <span className={ctx.deltaClass(totalChange)}>{Math.round(totalChange).toLocaleString()}</span>;
     },
   },
 ];
