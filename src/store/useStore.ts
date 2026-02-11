@@ -59,7 +59,7 @@ export const useStore = create<AppState>()(
       subgroups: [],
       custodies: [],
       widgets: [],
-      theme: 'light',
+      theme: 'dark',
       priceSource: 'brapi',
       brapiToken: '',
       activeTab: 'positions',
