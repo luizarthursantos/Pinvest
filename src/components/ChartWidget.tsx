@@ -144,14 +144,17 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
   }
 
   const rotateLabels = data.length > 5;
-  const tickSize = data.length > 10 ? 9 : 11;
-  const barHeight = compact ? (rotateLabels ? 220 : 180) : (rotateLabels ? 340 : 300);
+  const tickSize = compact ? 9 : (data.length > 10 ? 9 : 11);
+  const barHeight = compact ? (rotateLabels ? 180 : 150) : (rotateLabels ? 340 : 300);
+  const barMargin = compact
+    ? { top: 4, right: 4, bottom: rotateLabels ? 50 : 4, left: 4 }
+    : rotateLabels ? { bottom: 60 } : undefined;
 
   return (
     <div>
       <div className="chart-total">Total: {fmtTotal(total)}</div>
       <ResponsiveContainer width="100%" height={barHeight}>
-        <BarChart data={data} margin={rotateLabels ? { bottom: 60 } : undefined}>
+        <BarChart data={data} margin={barMargin}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="name"
@@ -160,7 +163,7 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
             textAnchor={rotateLabels ? 'end' : 'middle'}
             interval={0}
           />
-          <YAxis tick={{ fontSize: tickSize }} />
+          {compact ? <YAxis hide /> : <YAxis tick={{ fontSize: tickSize }} />}
           <Tooltip formatter={(val) => fmt(Number(val))} />
           <Bar dataKey="value" fill="#4f46e5">
             {data.map((_, i) => (
