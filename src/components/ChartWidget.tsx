@@ -145,9 +145,9 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
 
   const rotateLabels = data.length > 5;
   const tickSize = compact ? 9 : (data.length > 10 ? 9 : 11);
-  const barHeight = compact ? (rotateLabels ? 180 : 150) : (rotateLabels ? 340 : 300);
+  const barHeight = compact ? (rotateLabels ? 200 : 160) : (rotateLabels ? 340 : 300);
   const barMargin = compact
-    ? { top: 4, right: 4, bottom: rotateLabels ? 50 : 4, left: 4 }
+    ? { top: 4, right: 8, bottom: rotateLabels ? 50 : 4, left: 0 }
     : rotateLabels ? { bottom: 60 } : undefined;
 
   return (
@@ -163,7 +163,7 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
             textAnchor={rotateLabels ? 'end' : 'middle'}
             interval={0}
           />
-          {compact ? <YAxis hide /> : <YAxis tick={{ fontSize: tickSize }} />}
+          <YAxis tick={{ fontSize: tickSize }} width={compact ? 40 : undefined} />
           <Tooltip formatter={(val) => fmt(Number(val))} />
           <Bar dataKey="value" fill="#4f46e5">
             {data.map((_, i) => (
