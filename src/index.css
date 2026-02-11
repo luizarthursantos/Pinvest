@@ -277,6 +277,15 @@ th {
   white-space: nowrap;
 }
 
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable-th:hover {
+  color: var(--text-primary);
+}
+
 td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--border-color);

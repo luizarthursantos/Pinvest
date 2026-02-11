@@ -89,6 +89,8 @@ export default function PositionsTab() {
   const [editMode, setEditMode] = useState(false);
   const [showColConfig, setShowColConfig] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const refresh = usePriceRefresh();
 
   useEffect(() => {
@@ -182,6 +184,70 @@ export default function PositionsTab() {
 
     return totals;
   }, [investments, totalValue]);
+
+  const getSortValue = (inv: Investment, key: string): number | string => {
+    const value = inv.quantity * inv.currentPrice;
+    switch (key) {
+      case 'name': return inv.name.toLowerCase();
+      case 'type': return inv.type;
+      case 'ticker': return (inv.ticker || '').toLowerCase();
+      case 'price': return inv.currentPrice;
+      case 'qty': return inv.quantity;
+      case 'totalValue': return value;
+      case 'pctTotal': return totalValue > 0 ? value / totalValue : 0;
+      case 'targetTotal': return inv.targetTotalWeight ?? -Infinity;
+      case 'deltaTotal': {
+        const pt = totalValue > 0 ? (value / totalValue) * 100 : 0;
+        return inv.targetTotalWeight != null ? inv.targetTotalWeight - pt : -Infinity;
+      }
+      case 'group': return inv.group.toLowerCase();
+      case 'pctType': {
+        const tv = typeTotals[inv.type] || 1;
+        return value / tv;
+      }
+      case 'targetType': return inv.targetTypeWeight ?? -Infinity;
+      case 'deltaType': {
+        const tv = typeTotals[inv.type] || 1;
+        const pt = (value / tv) * 100;
+        return inv.targetTypeWeight != null ? inv.targetTypeWeight - pt : -Infinity;
+      }
+      case 'subgroup': return inv.subgroup.toLowerCase();
+      case 'custody': return inv.custody.toLowerCase();
+      case 'dailyChangePct': return inv.dailyChangePercent ?? -Infinity;
+      case 'dailyChangeVal': return (inv.dailyChange ?? 0) * inv.quantity;
+      default: return 0;
+    }
+  };
+
+  const sortedInvestments = useMemo(() => {
+    if (!sortKey) return investments;
+    return [...investments].sort((a, b) => {
+      const va = getSortValue(a, sortKey);
+      const vb = getSortValue(b, sortKey);
+      let cmp: number;
+      if (typeof va === 'string' && typeof vb === 'string') {
+        cmp = va.localeCompare(vb);
+      } else {
+        cmp = (va as number) - (vb as number);
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [investments, sortKey, sortDir, totalValue, typeTotals]);
+
+  const handleSort = (key: string) => {
+    if (sortKey === key) {
+      if (sortDir === 'asc') {
+        setSortDir('desc');
+      } else {
+        setSortKey(null);
+        setSortDir('asc');
+      }
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  };
 
   const toggleColumn = (key: string) => {
     if (positionColumns.includes(key)) {
@@ -288,7 +354,14 @@ export default function PositionsTab() {
             <thead>
               <tr>
                 {visibleCols.map((col) => (
-                  <th key={col.key}>{col.label}</th>
+                  <th
+                    key={col.key}
+                    className="sortable-th"
+                    onClick={() => handleSort(col.key)}
+                  >
+                    {col.label}
+                    {sortKey === col.key ? (sortDir === 'asc' ? ' \u25B2' : ' \u25BC') : ''}
+                  </th>
                 ))}
                 {editMode && <th>Actions</th>}
               </tr>
@@ -322,7 +395,7 @@ export default function PositionsTab() {
                 })}
                 {editMode && <td />}
               </tr>
-              {investments.map((inv) => {
+              {sortedInvestments.map((inv) => {
                 const value = inv.quantity * inv.currentPrice;
                 const pctTotal = totalValue > 0 ? (value / totalValue) * 100 : 0;
                 const typeVal = typeTotals[inv.type] || 1;
