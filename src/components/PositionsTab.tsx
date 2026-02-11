@@ -32,8 +32,8 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: 'ticker', label: 'Ticker', render: (inv) => inv.ticker || '-' },
   { key: 'price', label: 'Price', className: 'cell-number', render: (inv, ctx) => ctx.fmt(inv.currentPrice) },
   { key: 'qty', label: 'Qty', className: 'cell-number', render: (inv) => Math.round(inv.quantity).toLocaleString() },
-  { key: 'totalValue', label: 'Total Value', className: 'cell-number cell-value', render: (_inv, ctx) => Math.round(ctx.value).toLocaleString() },
-  { key: 'pctTotal', label: '% of Total', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctTotal.toFixed(1)}%` },
+  { key: 'totalValue', label: 'Total', className: 'cell-number cell-value', render: (_inv, ctx) => Math.round(ctx.value).toLocaleString() },
+  { key: 'pctTotal', label: '% Total', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctTotal.toFixed(1)}%` },
   {
     key: 'targetTotal', label: 'Target Total %', className: 'cell-number',
     render: (inv) => inv.targetTotalWeight != null ? `${inv.targetTotalWeight.toFixed(1)}%` : '-',
@@ -45,7 +45,7 @@ const ALL_COLUMNS: ColumnDef[] = [
       : '-',
   },
   { key: 'group', label: 'Group', render: (inv) => inv.group },
-  { key: 'pctType', label: '% of Type', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctType.toFixed(1)}%` },
+  { key: 'pctType', label: '% Type', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctType.toFixed(1)}%` },
   {
     key: 'targetType', label: 'Target Type %', className: 'cell-number',
     render: (inv) => inv.targetTypeWeight != null ? `${inv.targetTypeWeight.toFixed(1)}%` : '-',
@@ -67,7 +67,7 @@ const ALL_COLUMNS: ColumnDef[] = [
     },
   },
   {
-    key: 'dailyChangeVal', label: 'Day Value', className: 'cell-number',
+    key: 'dailyChangeVal', label: 'Day', className: 'cell-number',
     render: (inv, ctx) => {
       const v = inv.dailyChange;
       if (v == null) return '-';
@@ -89,7 +89,7 @@ export default function PositionsTab() {
   const [editMode, setEditMode] = useState(false);
   const [showColConfig, setShowColConfig] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [compact, setCompact] = useState(false);
+  const [compact, setCompact] = useState(true);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const refresh = usePriceRefresh();
@@ -273,37 +273,36 @@ export default function PositionsTab() {
       <div className="tab-header">
         <h2>Positions</h2>
         <div className="tab-actions">
-          <button className="btn-primary" onClick={() => setShowAdd(true)}>
-            + Add
+          <button className="btn-primary btn-sq" title="Add Investment" onClick={() => setShowAdd(true)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
           </button>
-          <button className="btn-secondary" onClick={handleRefresh} disabled={refreshing}>
-            {refreshing ? 'Refreshing...' : 'Refresh Prices'}
+          <button className="btn-secondary btn-sq" title="Refresh Prices" onClick={handleRefresh} disabled={refreshing}>
+            <svg className={refreshing ? 'icon-spin' : ''} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
           </button>
-          <button
-            className={`btn-secondary ${compact ? 'btn-active' : ''}`}
-            onClick={() => setCompact(!compact)}
-          >
-            Compact
+          <button className={`btn-secondary btn-sq ${compact ? 'btn-active' : ''}`} title="Compact View" onClick={() => setCompact(!compact)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 8h18M3 12h18M3 16h18"/></svg>
           </button>
           <button
-            className={`btn-secondary ${editMode ? 'btn-active' : ''}`}
+            className={`btn-secondary btn-sq ${editMode ? 'btn-active' : ''}`}
+            title={editMode ? 'Done' : 'Edit'}
             onClick={() => { setEditMode(!editMode); if (editMode) setShowColConfig(false); }}
           >
-            {editMode ? 'Done' : 'Edit'}
+            {editMode
+              ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+            }
           </button>
+          {editMode && (
+            <button
+              className={`btn-secondary btn-sq ${showColConfig ? 'btn-active' : ''}`}
+              title={showColConfig ? 'Hide Columns' : 'Configure Columns'}
+              onClick={() => setShowColConfig(!showColConfig)}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
+            </button>
+          )}
         </div>
       </div>
-
-      {editMode && (
-        <div className="col-config-toggle">
-          <button
-            className={`btn-secondary ${showColConfig ? 'btn-active' : ''}`}
-            onClick={() => setShowColConfig(!showColConfig)}
-          >
-            {showColConfig ? 'Hide Columns' : 'Configure Columns'}
-          </button>
-        </div>
-      )}
 
       {showColConfig && (
         <div className="col-config-panel">
