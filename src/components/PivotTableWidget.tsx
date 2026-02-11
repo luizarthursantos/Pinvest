@@ -42,6 +42,7 @@ function getMetricValue(inv: Investment, metric: string, totalValue: number, gro
       return (inv.quantity * inv.currentPrice / gv) * 100;
     }
     case 'dailyReturn': return (inv.dailyChange ?? 0) * inv.quantity;
+    case 'dailyReturnPct': return inv.dailyChangePercent ?? 0;
     default: return 0;
   }
 }
@@ -178,7 +179,9 @@ export default function PivotTableWidget({ widget }: { widget: AnalyticsTable })
 
   const fmt = (widget.metric === 'totalValue' || widget.metric === 'quantity' || widget.metric === 'dailyReturn')
     ? (n: number) => Math.round(n).toLocaleString()
-    : (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    : widget.metric === 'dailyReturnPct'
+      ? (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%'
+      : (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
   return (
     <div className="pivot-table-container">

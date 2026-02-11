@@ -34,6 +34,7 @@ function getMetricValue(inv: Investment, metric: string, totalValue: number, gro
       return (inv.quantity * inv.currentPrice / gv) * 100;
     }
     case 'dailyReturn': return (inv.dailyChange ?? 0) * inv.quantity;
+    case 'dailyReturnPct': return inv.dailyChangePercent ?? 0;
     default: return 0;
   }
 }
@@ -61,9 +62,22 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
     }
 
     const map: Record<string, number> = {};
-    for (const inv of filtered) {
-      const key = getCategoryValue(inv, widget.category);
-      map[key] = (map[key] || 0) + getMetricValue(inv, widget.metric, totalValue, groupTotals);
+    if (widget.metric === 'dailyReturnPct') {
+      const weights: Record<string, number> = {};
+      for (const inv of filtered) {
+        const key = getCategoryValue(inv, widget.category);
+        const w = inv.quantity * inv.currentPrice;
+        map[key] = (map[key] || 0) + (inv.dailyChangePercent ?? 0) * w;
+        weights[key] = (weights[key] || 0) + w;
+      }
+      for (const key of Object.keys(map)) {
+        map[key] = weights[key] > 0 ? map[key] / weights[key] : 0;
+      }
+    } else {
+      for (const inv of filtered) {
+        const key = getCategoryValue(inv, widget.category);
+        map[key] = (map[key] || 0) + getMetricValue(inv, widget.metric, totalValue, groupTotals);
+      }
     }
     return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }));
   }, [investments, widget]);
@@ -72,7 +86,9 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
 
   const fmt = (widget.metric === 'totalValue' || widget.metric === 'quantity' || widget.metric === 'dailyReturn')
     ? (n: number) => Math.round(n).toLocaleString()
-    : (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    : widget.metric === 'dailyReturnPct'
+      ? (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%'
+      : (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
   const fmtTotal = (n: number) => Math.round(n).toLocaleString();
 
   const sliceLabels = widget.sliceLabels ?? ['percent'];
