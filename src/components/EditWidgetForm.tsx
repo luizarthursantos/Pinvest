@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore';
 import type { AnalyticsWidget, SliceLabelOption, LabelPosition } from '../types';
 
 const CATEGORIES = ['group', 'subgroup', 'custody', 'type', 'name', 'ticker'];
-const METRICS = ['totalValue', 'quantity', 'currentPrice', 'pctTotal', 'pctGroup'];
+const METRICS = ['totalValue', 'quantity', 'currentPrice', 'pctTotal', 'pctGroup', 'dailyReturn'];
 
 function metricLabel(m: string) {
   switch (m) {
@@ -12,6 +12,7 @@ function metricLabel(m: string) {
     case 'currentPrice': return 'Price';
     case 'pctTotal': return '% of Total';
     case 'pctGroup': return '% of Group';
+    case 'dailyReturn': return 'Daily Return';
     default: return m;
   }
 }

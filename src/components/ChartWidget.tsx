@@ -33,6 +33,7 @@ function getMetricValue(inv: Investment, metric: string, totalValue: number, gro
       const gv = groupTotals[inv.group] || 1;
       return (inv.quantity * inv.currentPrice / gv) * 100;
     }
+    case 'dailyReturn': return (inv.dailyChange ?? 0) * inv.quantity;
     default: return 0;
   }
 }
@@ -69,7 +70,7 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
 
   const total = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
 
-  const fmt = (widget.metric === 'totalValue' || widget.metric === 'quantity')
+  const fmt = (widget.metric === 'totalValue' || widget.metric === 'quantity' || widget.metric === 'dailyReturn')
     ? (n: number) => Math.round(n).toLocaleString()
     : (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
   const fmtTotal = (n: number) => Math.round(n).toLocaleString();

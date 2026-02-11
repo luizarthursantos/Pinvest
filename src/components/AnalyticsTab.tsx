@@ -12,6 +12,7 @@ function metricLabel(m: string) {
     case 'currentPrice': return 'Price';
     case 'pctTotal': return '% of Total';
     case 'pctGroup': return '% of Group';
+    case 'dailyReturn': return 'Daily Return';
     default: return m;
   }
 }
