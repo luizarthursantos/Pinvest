@@ -1019,7 +1019,7 @@ tbody tr:last-child td {
 /* ===== Favorite Widgets in Positions ===== */
 .fav-widgets-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: 1fr;
   gap: 10px;
   margin-top: 12px;
 }
