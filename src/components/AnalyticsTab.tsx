@@ -92,7 +92,7 @@ export default function AnalyticsTab() {
               </div>
               <div className="widget-body">
                 {w.kind === 'chart' ? (
-                  <ChartWidget widget={w} />
+                  <ChartWidget widget={w} interactive={editMode} />
                 ) : (
                   <PivotTableWidget widget={w} />
                 )}

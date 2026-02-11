@@ -50,7 +50,7 @@ function applyFilters(investments: Investment[], filters: Record<string, string[
 
 const RADIAN = Math.PI / 180;
 
-export default function ChartWidget({ widget, compact }: { widget: AnalyticsChart; compact?: boolean }) {
+export default function ChartWidget({ widget, compact, interactive }: { widget: AnalyticsChart; compact?: boolean; interactive?: boolean }) {
   const investments = useStore((s) => s.investments);
 
   const data = useMemo(() => {
@@ -133,7 +133,7 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
 
   if (widget.chartType === 'pie') {
     return (
-      <div>
+      <div style={interactive ? undefined : { pointerEvents: 'none' }}>
         <div className="chart-total">Total: {fmtTotal(total)}</div>
         <ResponsiveContainer width="100%" height={pieH}>
           <PieChart>
@@ -151,7 +151,7 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip formatter={(val) => fmt(Number(val))} />
+            {interactive && <Tooltip formatter={(val) => fmt(Number(val))} />}
             {showLegend && !compact && <Legend />}
           </PieChart>
         </ResponsiveContainer>
@@ -167,7 +167,7 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
     : rotateLabels ? { bottom: 60 } : undefined;
 
   return (
-    <div>
+    <div style={interactive ? undefined : { pointerEvents: 'none' }}>
       <div className="chart-total">Total: {fmtTotal(total)}</div>
       <ResponsiveContainer width="100%" height={barHeight}>
         <BarChart data={data} margin={barMargin}>
@@ -180,7 +180,7 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
             interval={0}
           />
           <YAxis tick={{ fontSize: tickSize }} width={compact ? 40 : undefined} allowDecimals={false} />
-          <Tooltip formatter={(val) => fmt(Number(val))} />
+          {interactive && <Tooltip formatter={(val) => fmt(Number(val))} />}
           <Bar dataKey="value" fill="#4f46e5">
             {data.map((_, i) => (
               <Cell key={i} fill={COLORS[i % COLORS.length]} />

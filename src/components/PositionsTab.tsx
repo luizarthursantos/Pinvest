@@ -458,7 +458,7 @@ export default function PositionsTab() {
             <div key={w.id} className="fav-widget-card">
               <div className="widget-body">
                 {w.kind === 'chart' ? (
-                  <ChartWidget widget={w as AnalyticsChart} compact />
+                  <ChartWidget widget={w as AnalyticsChart} compact interactive={false} />
                 ) : (
                   <PivotTableWidget widget={w as AnalyticsTable} />
                 )}
