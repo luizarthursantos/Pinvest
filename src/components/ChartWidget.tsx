@@ -41,6 +41,7 @@ function getMetricValue(inv: Investment, metric: string, totalValue: number, gro
 
 function applyFilters(investments: Investment[], filters: Record<string, string[]>) {
   return investments.filter((inv) => {
+    if (inv.quantity <= 0) return false;
     for (const [cat, vals] of Object.entries(filters)) {
       if (vals.length > 0 && !vals.includes(getCategoryValue(inv, cat))) return false;
     }
