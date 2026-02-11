@@ -97,7 +97,8 @@ export default function PositionsTab() {
   const removeInvestment = useStore((s) => s.removeInvestment);
   const positionColumns = useStore((s) => s.positionColumns);
   const setPositionColumns = useStore((s) => s.setPositionColumns);
-  const favoriteWidgets = useStore((s) => s.widgets.filter((w) => w.favorite));
+  const widgets = useStore((s) => s.widgets);
+  const favoriteWidgets = useMemo(() => widgets.filter((w) => w.favorite), [widgets]);
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
