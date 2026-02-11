@@ -31,7 +31,7 @@ const ALL_COLUMNS: ColumnDef[] = [
   },
   { key: 'ticker', label: 'Ticker', render: (inv) => inv.ticker || '-' },
   { key: 'price', label: 'Price', className: 'cell-number', render: (inv, ctx) => ctx.fmt(inv.currentPrice) },
-  { key: 'qty', label: 'Qty', className: 'cell-number', render: (inv, ctx) => ctx.fmt(inv.quantity) },
+  { key: 'qty', label: 'Qty', className: 'cell-number', render: (inv) => Math.round(inv.quantity).toLocaleString() },
   { key: 'totalValue', label: 'Total Value', className: 'cell-number cell-value', render: (_inv, ctx) => Math.round(ctx.value).toLocaleString() },
   { key: 'pctTotal', label: '% of Total', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctTotal.toFixed(2)}%` },
   {

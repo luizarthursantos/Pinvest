@@ -92,7 +92,7 @@ export default function PivotTableWidget({ widget }: { widget: AnalyticsTable })
     return { rows, cols, data: pivotData, rowTotals, colTotals, grandTotal };
   }, [investments, widget]);
 
-  const fmt = widget.metric === 'totalValue'
+  const fmt = (widget.metric === 'totalValue' || widget.metric === 'quantity')
     ? (n: number) => Math.round(n).toLocaleString()
     : (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 

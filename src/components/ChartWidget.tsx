@@ -69,7 +69,7 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
 
   const total = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
 
-  const fmt = widget.metric === 'totalValue'
+  const fmt = (widget.metric === 'totalValue' || widget.metric === 'quantity')
     ? (n: number) => Math.round(n).toLocaleString()
     : (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
   const fmtTotal = (n: number) => Math.round(n).toLocaleString();
