@@ -33,10 +33,10 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: 'price', label: 'Price', className: 'cell-number', render: (inv, ctx) => ctx.fmt(inv.currentPrice) },
   { key: 'qty', label: 'Qty', className: 'cell-number', render: (inv) => Math.round(inv.quantity).toLocaleString() },
   { key: 'totalValue', label: 'Total Value', className: 'cell-number cell-value', render: (_inv, ctx) => Math.round(ctx.value).toLocaleString() },
-  { key: 'pctTotal', label: '% of Total', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctTotal.toFixed(2)}%` },
+  { key: 'pctTotal', label: '% of Total', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctTotal.toFixed(1)}%` },
   {
     key: 'targetTotal', label: 'Target Total %', className: 'cell-number',
-    render: (inv) => inv.targetTotalWeight != null ? `${inv.targetTotalWeight.toFixed(2)}%` : '-',
+    render: (inv) => inv.targetTotalWeight != null ? `${inv.targetTotalWeight.toFixed(1)}%` : '-',
   },
   {
     key: 'deltaTotal', label: 'Delta Total', className: 'cell-number',
@@ -45,10 +45,10 @@ const ALL_COLUMNS: ColumnDef[] = [
       : '-',
   },
   { key: 'group', label: 'Group', render: (inv) => inv.group },
-  { key: 'pctGroup', label: '% of Group', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctGroup.toFixed(2)}%` },
+  { key: 'pctGroup', label: '% of Group', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctGroup.toFixed(1)}%` },
   {
     key: 'targetGroup', label: 'Target Group %', className: 'cell-number',
-    render: (inv) => inv.targetGroupWeight != null ? `${inv.targetGroupWeight.toFixed(2)}%` : '-',
+    render: (inv) => inv.targetGroupWeight != null ? `${inv.targetGroupWeight.toFixed(1)}%` : '-',
   },
   {
     key: 'deltaGroup', label: 'Delta Group', className: 'cell-number',
@@ -118,7 +118,7 @@ export default function PositionsTab() {
   const fmt = (n: number) =>
     n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  const pct = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+  const pct = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
 
   const deltaClass = (val: number) =>
     val > 0.5 ? 'delta-positive' : val < -0.5 ? 'delta-negative' : 'delta-neutral';
@@ -244,8 +244,8 @@ export default function PositionsTab() {
                 const pctTotal = totalValue > 0 ? (value / totalValue) * 100 : 0;
                 const groupVal = groupTotals[inv.group] || 1;
                 const pctGroup = groupVal > 0 ? (value / groupVal) * 100 : 0;
-                const deltaTotal = inv.targetTotalWeight != null ? pctTotal - inv.targetTotalWeight : null;
-                const deltaGrp = inv.targetGroupWeight != null ? pctGroup - inv.targetGroupWeight : null;
+                const deltaTotal = inv.targetTotalWeight != null ? inv.targetTotalWeight - pctTotal : null;
+                const deltaGrp = inv.targetGroupWeight != null ? inv.targetGroupWeight - pctGroup : null;
                 const ctx: RowCtx = { value, pctTotal, pctGroup, deltaTotal, deltaGrp, fmt, pct, deltaClass };
 
                 return (
