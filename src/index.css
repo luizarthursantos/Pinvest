@@ -290,7 +290,7 @@ body {
 }
 
 .table-container .row-total td:first-child {
-  background: var(--bg-secondary);
+  background: var(--accent-light);
 }
 
 table {
@@ -633,8 +633,9 @@ tbody tr:last-child td {
 }
 
 .row-total {
-  background: var(--bg-secondary);
+  background: var(--accent-light);
   font-weight: 600;
+  border-bottom: 2px solid var(--accent);
 }
 
 /* ===== Category Order Picker ===== */
