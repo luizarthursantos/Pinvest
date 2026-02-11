@@ -26,6 +26,7 @@ interface AppState {
   updateWidget: (id: string, updates: Partial<AnalyticsWidget>) => void;
   removeWidget: (id: string) => void;
   moveWidget: (id: string, dir: -1 | 1) => void;
+  toggleWidgetFavorite: (id: string) => void;
   setTheme: (t: Theme) => void;
   setPriceSource: (s: PriceSource) => void;
   setBrapiToken: (t: string) => void;
@@ -137,6 +138,13 @@ export const useStore = create<AppState>()(
           [ws[idx], ws[newIdx]] = [ws[newIdx], ws[idx]];
           return { widgets: ws };
         }),
+
+      toggleWidgetFavorite: (id) =>
+        set((s) => ({
+          widgets: s.widgets.map((w) =>
+            w.id === id ? { ...w, favorite: !w.favorite } as AnalyticsWidget : w
+          ),
+        })),
 
       setTheme: (t) => set({ theme: t }),
 

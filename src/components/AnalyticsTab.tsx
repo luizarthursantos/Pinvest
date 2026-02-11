@@ -29,6 +29,7 @@ export default function AnalyticsTab() {
   const widgets = useStore((s) => s.widgets);
   const removeWidget = useStore((s) => s.removeWidget);
   const moveWidget = useStore((s) => s.moveWidget);
+  const toggleFavorite = useStore((s) => s.toggleWidgetFavorite);
   const [showAdd, setShowAdd] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editWidgetId, setEditWidgetId] = useState<string | null>(null);
@@ -70,12 +71,15 @@ export default function AnalyticsTab() {
             >
               <div className="widget-header">
                 <span className="widget-title">
+                  {w.favorite && <span className="fav-star">{'\u2605'} </span>}
                   {w.kind === 'chart'
                     ? `${w.chartType === 'pie' ? 'Pie' : 'Bar'} Chart — ${categoryLabel(w.category)} by ${metricLabel(w.metric)}`
                     : `Pivot — ${w.rowCategories.map(categoryLabel).join(' / ')} x ${w.columnCategories.map(categoryLabel).join(' / ')} (${metricLabel(w.metric)})`}
                 </span>
                 {editMode && (
                   <div className="widget-actions">
+                    <button className={`btn-icon${w.favorite ? ' btn-fav-active' : ''}`} title={w.favorite ? 'Remove from Positions' : 'Show in Positions'}
+                      onClick={(e) => { e.stopPropagation(); toggleFavorite(w.id); }}>{w.favorite ? '\u2605' : '\u2606'}</button>
                     <button className="btn-icon" title="Move up" disabled={wi === 0}
                       onClick={(e) => { e.stopPropagation(); moveWidget(w.id, -1); }}>&#9650;</button>
                     <button className="btn-icon" title="Move down" disabled={wi === widgets.length - 1}

@@ -3,7 +3,9 @@ import { useStore } from '../store/useStore';
 import { usePriceRefresh } from '../hooks/usePriceRefresh';
 import AddInvestmentForm from './AddInvestmentForm';
 import EditInvestmentForm from './EditInvestmentForm';
-import type { Investment } from '../types';
+import ChartWidget from './ChartWidget';
+import PivotTableWidget from './PivotTableWidget';
+import type { Investment, AnalyticsChart, AnalyticsTable } from '../types';
 
 const BADGE_COLORS = [
   'badge-blue', 'badge-green', 'badge-purple', 'badge-orange',
@@ -95,6 +97,7 @@ export default function PositionsTab() {
   const removeInvestment = useStore((s) => s.removeInvestment);
   const positionColumns = useStore((s) => s.positionColumns);
   const setPositionColumns = useStore((s) => s.setPositionColumns);
+  const favoriteWidgets = useStore((s) => s.widgets.filter((w) => w.favorite));
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -432,6 +435,22 @@ export default function PositionsTab() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {favoriteWidgets.length > 0 && (
+        <div className="fav-widgets-grid">
+          {favoriteWidgets.map((w) => (
+            <div key={w.id} className="fav-widget-card">
+              <div className="widget-body">
+                {w.kind === 'chart' ? (
+                  <ChartWidget widget={w as AnalyticsChart} />
+                ) : (
+                  <PivotTableWidget widget={w as AnalyticsTable} />
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

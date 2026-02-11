@@ -1016,6 +1016,39 @@ tbody tr:last-child td {
   cursor: not-allowed;
 }
 
+/* ===== Favorite Widgets in Positions ===== */
+.fav-widgets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.fav-widget-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.fav-widget-card .widget-body {
+  padding: 6px;
+}
+
+.fav-widget-card .chart-total {
+  font-size: 0.75rem;
+  margin-bottom: 2px;
+}
+
+.btn-fav-active {
+  color: var(--warning);
+}
+
+.fav-star {
+  color: var(--warning);
+}
+
 /* ===== Compact Table Mode ===== */
 .table-compact table {
   font-size: 0.72rem;

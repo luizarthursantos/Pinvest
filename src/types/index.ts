@@ -34,6 +34,7 @@ export interface AnalyticsChart {
   sliceLabels?: SliceLabelOption[];
   showLegend?: boolean;
   labelPosition?: LabelPosition;
+  favorite?: boolean;
 }
 
 export interface AnalyticsTable {
@@ -43,6 +44,7 @@ export interface AnalyticsTable {
   columnCategories: string[];
   metric: string;
   filters: Record<string, string[]>;
+  favorite?: boolean;
 }
 
 export type AnalyticsWidget = AnalyticsChart | AnalyticsTable;
