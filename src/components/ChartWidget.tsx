@@ -95,7 +95,7 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
       const y = cy + radius * Math.sin(-midAngle * RADIAN);
       const anchor = x > cx ? 'start' : 'end';
       return (
-        <text x={x} y={y} fill="var(--text)" textAnchor={anchor} dominantBaseline="central" fontSize={11} fontWeight={600}>
+        <text x={x} y={y} fill="var(--text-primary)" textAnchor={anchor} dominantBaseline="central" fontSize={11} fontWeight={600}>
           {parts.join(' ')}
         </text>
       );
