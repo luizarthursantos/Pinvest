@@ -567,9 +567,50 @@ tbody tr:last-child td {
   background: var(--accent-light);
 }
 
+.row-subtotal {
+  background: var(--bg-secondary);
+  font-weight: 600;
+  font-style: italic;
+  font-size: 0.78rem;
+}
+
+.cell-subtotal-label {
+  text-align: right;
+  padding-right: 16px !important;
+}
+
 .row-total {
   background: var(--bg-secondary);
   font-weight: 600;
+}
+
+/* ===== Category Order Picker ===== */
+.category-order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.category-order-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+}
+
+.category-order-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.category-order-actions .btn-icon {
+  font-size: 0.7rem;
+  padding: 2px 6px;
 }
 
 /* ===== Filters ===== */

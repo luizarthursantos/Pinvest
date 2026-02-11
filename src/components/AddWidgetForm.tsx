@@ -142,36 +142,58 @@ export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
         {kind === 'table' && (
           <>
             <label>Row Categories</label>
-            <div className="filter-chips">
-              {CATEGORIES.map((c) => (
-                <label key={c} className="chip">
-                  <input
-                    type="checkbox"
-                    checked={rowCategories.includes(c)}
-                    onChange={() => setRowCategories((prev) =>
-                      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
-                    )}
-                  />
-                  {categoryLabel(c)}
-                </label>
-              ))}
-            </div>
+            {rowCategories.length > 0 && (
+              <div className="category-order-list">
+                {rowCategories.map((c, idx) => (
+                  <div key={c} className="category-order-item">
+                    <span>{idx + 1}. {categoryLabel(c)}</span>
+                    <div className="category-order-actions">
+                      <button type="button" className="btn-icon" disabled={idx === 0}
+                        onClick={() => { const n = [...rowCategories]; [n[idx - 1], n[idx]] = [n[idx], n[idx - 1]]; setRowCategories(n); }}>&#9650;</button>
+                      <button type="button" className="btn-icon" disabled={idx === rowCategories.length - 1}
+                        onClick={() => { const n = [...rowCategories]; [n[idx], n[idx + 1]] = [n[idx + 1], n[idx]]; setRowCategories(n); }}>&#9660;</button>
+                      <button type="button" className="btn-icon" onClick={() => setRowCategories(rowCategories.filter((x) => x !== c))}>&#10005;</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {CATEGORIES.filter((c) => !rowCategories.includes(c)).length > 0 && (
+              <div className="filter-chips">
+                {CATEGORIES.filter((c) => !rowCategories.includes(c)).map((c) => (
+                  <button key={c} type="button" className="chip" onClick={() => setRowCategories([...rowCategories, c])}>
+                    + {categoryLabel(c)}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <label>Column Categories</label>
-            <div className="filter-chips">
-              {CATEGORIES.map((c) => (
-                <label key={c} className="chip">
-                  <input
-                    type="checkbox"
-                    checked={columnCategories.includes(c)}
-                    onChange={() => setColumnCategories((prev) =>
-                      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
-                    )}
-                  />
-                  {categoryLabel(c)}
-                </label>
-              ))}
-            </div>
+            {columnCategories.length > 0 && (
+              <div className="category-order-list">
+                {columnCategories.map((c, idx) => (
+                  <div key={c} className="category-order-item">
+                    <span>{idx + 1}. {categoryLabel(c)}</span>
+                    <div className="category-order-actions">
+                      <button type="button" className="btn-icon" disabled={idx === 0}
+                        onClick={() => { const n = [...columnCategories]; [n[idx - 1], n[idx]] = [n[idx], n[idx - 1]]; setColumnCategories(n); }}>&#9650;</button>
+                      <button type="button" className="btn-icon" disabled={idx === columnCategories.length - 1}
+                        onClick={() => { const n = [...columnCategories]; [n[idx], n[idx + 1]] = [n[idx + 1], n[idx]]; setColumnCategories(n); }}>&#9660;</button>
+                      <button type="button" className="btn-icon" onClick={() => setColumnCategories(columnCategories.filter((x) => x !== c))}>&#10005;</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {CATEGORIES.filter((c) => !columnCategories.includes(c)).length > 0 && (
+              <div className="filter-chips">
+                {CATEGORIES.filter((c) => !columnCategories.includes(c)).map((c) => (
+                  <button key={c} type="button" className="chip" onClick={() => setColumnCategories([...columnCategories, c])}>
+                    + {categoryLabel(c)}
+                  </button>
+                ))}
+              </div>
+            )}
           </>
         )}
 
