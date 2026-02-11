@@ -27,6 +27,7 @@ function categoryLabel(c: string) {
 export default function AnalyticsTab() {
   const widgets = useStore((s) => s.widgets);
   const removeWidget = useStore((s) => s.removeWidget);
+  const moveWidget = useStore((s) => s.moveWidget);
   const [showAdd, setShowAdd] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editWidgetId, setEditWidgetId] = useState<string | null>(null);
@@ -60,7 +61,7 @@ export default function AnalyticsTab() {
         </div>
       ) : (
         <div className="widgets-grid">
-          {widgets.map((w) => (
+          {widgets.map((w, wi) => (
             <div
               key={w.id}
               className={`widget-card${editMode ? ' clickable-card' : ''}`}
@@ -73,13 +74,14 @@ export default function AnalyticsTab() {
                     : `Pivot — ${w.rowCategories.map(categoryLabel).join(' / ')} x ${w.columnCategories.map(categoryLabel).join(' / ')} (${metricLabel(w.metric)})`}
                 </span>
                 {editMode && (
-                  <button
-                    className="btn-icon btn-danger"
-                    title="Remove widget"
-                    onClick={(e) => { e.stopPropagation(); removeWidget(w.id); }}
-                  >
-                    &#10005;
-                  </button>
+                  <div className="widget-actions">
+                    <button className="btn-icon" title="Move up" disabled={wi === 0}
+                      onClick={(e) => { e.stopPropagation(); moveWidget(w.id, -1); }}>&#9650;</button>
+                    <button className="btn-icon" title="Move down" disabled={wi === widgets.length - 1}
+                      onClick={(e) => { e.stopPropagation(); moveWidget(w.id, 1); }}>&#9660;</button>
+                    <button className="btn-icon btn-danger" title="Remove widget"
+                      onClick={(e) => { e.stopPropagation(); removeWidget(w.id); }}>&#10005;</button>
+                  </div>
                 )}
               </div>
               <div className="widget-body">

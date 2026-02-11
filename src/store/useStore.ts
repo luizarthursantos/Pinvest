@@ -25,6 +25,7 @@ interface AppState {
   addWidget: (w: AnalyticsWidget) => void;
   updateWidget: (id: string, updates: Partial<AnalyticsWidget>) => void;
   removeWidget: (id: string) => void;
+  moveWidget: (id: string, dir: -1 | 1) => void;
   setTheme: (t: Theme) => void;
   setPriceSource: (s: PriceSource) => void;
   setBrapiToken: (t: string) => void;
@@ -125,6 +126,17 @@ export const useStore = create<AppState>()(
 
       removeWidget: (id) =>
         set((s) => ({ widgets: s.widgets.filter((w) => w.id !== id) })),
+
+      moveWidget: (id, dir) =>
+        set((s) => {
+          const idx = s.widgets.findIndex((w) => w.id === id);
+          if (idx < 0) return s;
+          const newIdx = idx + dir;
+          if (newIdx < 0 || newIdx >= s.widgets.length) return s;
+          const ws = [...s.widgets];
+          [ws[idx], ws[newIdx]] = [ws[newIdx], ws[idx]];
+          return { widgets: ws };
+        }),
 
       setTheme: (t) => set({ theme: t }),
 

@@ -16,7 +16,7 @@ export default function SettingsTab() {
   } = useStore();
 
   const fileRef = useRef<HTMLInputElement>(null);
-  const { canInstall, isInstalled, install } = useInstallPrompt();
+  const { canInstall, isInstalled, install, isSamsung } = useInstallPrompt();
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -128,6 +128,10 @@ export default function SettingsTab() {
               Install Pinvest as an app on your device for quick access and offline use.
             </p>
           </>
+        ) : isSamsung ? (
+          <p className="text-muted">
+            To install on Samsung Internet: tap the menu icon (three lines), then "Add page to" &rarr; "Home screen".
+          </p>
         ) : (
           <p className="text-muted">
             To install, open Pinvest in Chrome or Edge and use the browser's install option, or add to home screen on mobile.

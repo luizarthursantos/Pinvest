@@ -276,6 +276,23 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+.table-container th:first-child,
+.table-container td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--bg-card);
+}
+
+.table-container thead th:first-child {
+  background: var(--bg-secondary);
+  z-index: 3;
+}
+
+.table-container .row-total td:first-child {
+  background: var(--bg-secondary);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -547,6 +564,22 @@ tbody tr:last-child td {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);
+}
+
+.widget-actions {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.widget-actions .btn-icon {
+  font-size: 0.7rem;
+  padding: 2px 5px;
+}
+
+.widget-actions .btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .widget-body {

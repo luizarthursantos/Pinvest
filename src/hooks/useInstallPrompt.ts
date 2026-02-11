@@ -8,6 +8,7 @@ interface BeforeInstallPromptEvent extends Event {
 export function useInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const isSamsung = /SamsungBrowser/i.test(navigator.userAgent);
 
   useEffect(() => {
     if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -44,5 +45,5 @@ export function useInstallPrompt() {
     setDeferredPrompt(null);
   };
 
-  return { canInstall: !!deferredPrompt, isInstalled, install };
+  return { canInstall: !!deferredPrompt, isInstalled, install, isSamsung };
 }
