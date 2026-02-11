@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useStore } from '../store/useStore';
+import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import ListEditor from './ListEditor';
 import { exportToXlsx, importFromXlsx } from '../services/xlsxService';
 import type { Theme, PriceSource } from '../types';
@@ -14,6 +15,7 @@ export default function SettingsTab() {
   } = useStore();
 
   const fileRef = useRef<HTMLInputElement>(null);
+  const { canInstall, isInstalled, install } = useInstallPrompt();
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -106,6 +108,26 @@ export default function SettingsTab() {
         <ListEditor title="Groups" items={groups} onRename={renameGroup} onRemove={removeGroup} onAdd={addGroup} />
         <ListEditor title="Subgroups" items={subgroups} onRename={renameSubgroup} onRemove={removeSubgroup} onAdd={addSubgroup} />
         <ListEditor title="Custodies" items={custodies} onRename={renameCustody} onRemove={removeCustody} onAdd={addCustody} />
+      </div>
+
+      <div className="settings-section">
+        <h3>Install App</h3>
+        {isInstalled ? (
+          <p className="text-muted">Pinvest is already installed on your device.</p>
+        ) : canInstall ? (
+          <>
+            <button className="btn-primary" onClick={install}>
+              Install Pinvest
+            </button>
+            <p className="text-muted">
+              Install Pinvest as an app on your device for quick access and offline use.
+            </p>
+          </>
+        ) : (
+          <p className="text-muted">
+            To install, open Pinvest in Chrome or Edge and use the browser's install option, or add to home screen on mobile.
+          </p>
+        )}
       </div>
 
       <div className="settings-section settings-danger">
