@@ -5,6 +5,17 @@ import AddInvestmentForm from './AddInvestmentForm';
 import EditInvestmentForm from './EditInvestmentForm';
 import type { Investment } from '../types';
 
+const BADGE_COLORS = [
+  'badge-blue', 'badge-green', 'badge-purple', 'badge-orange',
+  'badge-pink', 'badge-teal', 'badge-red', 'badge-indigo',
+];
+
+function badgeColor(val: string): string {
+  let h = 0;
+  for (let i = 0; i < val.length; i++) h = ((h << 5) - h + val.charCodeAt(i)) | 0;
+  return BADGE_COLORS[Math.abs(h) % BADGE_COLORS.length];
+}
+
 interface ColumnDef {
   key: string;
   label: string;
@@ -44,7 +55,7 @@ const ALL_COLUMNS: ColumnDef[] = [
       ? <span className={ctx.deltaClass(ctx.deltaTotal)}>{ctx.pct(ctx.deltaTotal)}</span>
       : '-',
   },
-  { key: 'group', label: 'Group', render: (inv) => inv.group },
+  { key: 'group', label: 'Group', render: (inv) => <span className={`badge ${badgeColor(inv.group)}`}>{inv.group}</span> },
   { key: 'pctType', label: '% Type', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctType.toFixed(1)}%` },
   {
     key: 'targetType', label: 'Target Type %', className: 'cell-number',
@@ -56,8 +67,8 @@ const ALL_COLUMNS: ColumnDef[] = [
       ? <span className={ctx.deltaClass(ctx.deltaType)}>{ctx.pct(ctx.deltaType)}</span>
       : '-',
   },
-  { key: 'subgroup', label: 'Subgroup', render: (inv) => inv.subgroup },
-  { key: 'custody', label: 'Custody', render: (inv) => inv.custody },
+  { key: 'subgroup', label: 'Subgroup', render: (inv) => <span className={`badge ${badgeColor(inv.subgroup)}`}>{inv.subgroup}</span> },
+  { key: 'custody', label: 'Custody', render: (inv) => <span className={`badge ${badgeColor(inv.custody)}`}>{inv.custody}</span> },
   {
     key: 'dailyChangePct', label: 'Day %', className: 'cell-number',
     render: (inv, ctx) => {
