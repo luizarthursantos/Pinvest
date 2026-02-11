@@ -140,13 +140,22 @@ export default function ChartWidget({ widget }: { widget: AnalyticsChart }) {
     );
   }
 
+  const rotateLabels = data.length > 5;
+  const barHeight = rotateLabels ? 340 : 300;
+
   return (
     <div>
       <div className="chart-total">Total: {fmtTotal(total)}</div>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data}>
+      <ResponsiveContainer width="100%" height={barHeight}>
+        <BarChart data={data} margin={rotateLabels ? { bottom: 60 } : undefined}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
+          <XAxis
+            dataKey="name"
+            tick={{ fontSize: data.length > 10 ? 9 : 11 }}
+            angle={rotateLabels ? -45 : 0}
+            textAnchor={rotateLabels ? 'end' : 'middle'}
+            interval={0}
+          />
           <YAxis />
           <Tooltip formatter={(val) => fmt(Number(val))} />
           <Bar dataKey="value" fill="#4f46e5">
