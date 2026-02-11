@@ -179,7 +179,7 @@ export default function ChartWidget({ widget, compact }: { widget: AnalyticsChar
             textAnchor={rotateLabels ? 'end' : 'middle'}
             interval={0}
           />
-          <YAxis tick={{ fontSize: tickSize }} width={compact ? 40 : undefined} />
+          <YAxis tick={{ fontSize: tickSize }} width={compact ? 40 : undefined} allowDecimals={false} />
           <Tooltip formatter={(val) => fmt(Number(val))} />
           <Bar dataKey="value" fill="#4f46e5">
             {data.map((_, i) => (
