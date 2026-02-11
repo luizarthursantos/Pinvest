@@ -4,7 +4,7 @@ import type { Investment, InvestmentType, AnalyticsWidget } from '../types';
 
 const EXPORT_COLUMNS = [
   'name', 'type', 'ticker', 'quantity', 'currentPrice', 'manualPrice',
-  'group', 'subgroup', 'custody', 'targetTotalWeight', 'targetGroupWeight',
+  'group', 'subgroup', 'custody', 'targetTotalWeight', 'targetTypeWeight',
 ];
 
 export function exportToXlsx(investments: Investment[], widgets: AnalyticsWidget[]) {
@@ -19,7 +19,7 @@ export function exportToXlsx(investments: Investment[], widgets: AnalyticsWidget
     subgroup: inv.subgroup,
     custody: inv.custody,
     targetTotalWeight: inv.targetTotalWeight ?? '',
-    targetGroupWeight: inv.targetGroupWeight ?? '',
+    targetTypeWeight: inv.targetTypeWeight ?? '',
   }));
 
   const wb = XLSX.utils.book_new();
@@ -33,8 +33,8 @@ export function exportToXlsx(investments: Investment[], widgets: AnalyticsWidget
       kind: w.kind,
       chartType: w.kind === 'chart' ? w.chartType : '',
       category: w.kind === 'chart' ? w.category : '',
-      rowCategory: w.kind === 'table' ? w.rowCategory : '',
-      columnCategory: w.kind === 'table' ? w.columnCategory : '',
+      rowCategories: w.kind === 'table' ? w.rowCategories.join(',') : '',
+      columnCategories: w.kind === 'table' ? w.columnCategories.join(',') : '',
       metric: w.metric,
       filters: JSON.stringify(w.filters),
       sliceLabels: w.kind === 'chart' ? (w.sliceLabels ?? []).join(',') : '',
@@ -70,7 +70,7 @@ export function importFromXlsx(file: File): Promise<ImportResult> {
           const isStock = type === 'stock';
           const price = Number(row.currentPrice) || Number(row.manualPrice) || 0;
           const ttw = row.targetTotalWeight;
-          const tgw = row.targetGroupWeight;
+          const ttyw = row.targetTypeWeight ?? row.targetGroupWeight;
           return {
             id: uuid(),
             name: String(row.name || ''),
@@ -83,7 +83,7 @@ export function importFromXlsx(file: File): Promise<ImportResult> {
             subgroup: String(row.subgroup || ''),
             custody: String(row.custody || ''),
             targetTotalWeight: ttw !== '' && ttw != null ? Number(ttw) : undefined,
-            targetGroupWeight: tgw !== '' && tgw != null ? Number(tgw) : undefined,
+            targetTypeWeight: ttyw !== '' && ttyw != null ? Number(ttyw) : undefined,
           };
         });
 
@@ -109,11 +109,13 @@ export function importFromXlsx(file: File): Promise<ImportResult> {
                 labelPosition: (String(wr.labelPosition || 'inside') as 'inside' | 'outside'),
               });
             } else if (kind === 'table') {
+              const rc = String(wr.rowCategories || wr.rowCategory || 'group');
+              const cc = String(wr.columnCategories || wr.columnCategory || 'custody');
               widgets.push({
                 id: uuid(),
                 kind: 'table',
-                rowCategory: String(wr.rowCategory || 'group'),
-                columnCategory: String(wr.columnCategory || 'custody'),
+                rowCategories: rc.split(',').filter(Boolean),
+                columnCategories: cc.split(',').filter(Boolean),
                 metric: String(wr.metric || 'totalValue'),
                 filters,
               });

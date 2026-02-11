@@ -12,7 +12,7 @@ export interface Investment {
   subgroup: string;
   custody: string;
   targetTotalWeight?: number;
-  targetGroupWeight?: number;
+  targetTypeWeight?: number;
   lastPriceUpdate?: string;
   dailyChange?: number;
   dailyChangePercent?: number;
@@ -39,8 +39,8 @@ export interface AnalyticsChart {
 export interface AnalyticsTable {
   id: string;
   kind: 'table';
-  rowCategory: string;
-  columnCategory: string;
+  rowCategories: string[];
+  columnCategories: string[];
   metric: string;
   filters: Record<string, string[]>;
 }

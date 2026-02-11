@@ -48,8 +48,15 @@ function metricLabel(m: string) {
   }
 }
 
+function getCompositeKey(inv: Investment, categories: string[]): string {
+  return categories.map((c) => getCategoryValue(inv, c)).join(' / ');
+}
+
 export default function PivotTableWidget({ widget }: { widget: AnalyticsTable }) {
   const investments = useStore((s) => s.investments);
+
+  const rowCats = widget.rowCategories;
+  const colCats = widget.columnCategories;
 
   const { rows, cols, data, rowTotals, colTotals, grandTotal } = useMemo(() => {
     const filtered = applyFilters(investments, widget.filters);
@@ -64,8 +71,8 @@ export default function PivotTableWidget({ widget }: { widget: AnalyticsTable })
     const pivotData: Record<string, Record<string, number>> = {};
 
     for (const inv of filtered) {
-      const r = getCategoryValue(inv, widget.rowCategory);
-      const c = getCategoryValue(inv, widget.columnCategory);
+      const r = getCompositeKey(inv, rowCats);
+      const c = getCompositeKey(inv, colCats);
       rowSet.add(r);
       colSet.add(c);
       if (!pivotData[r]) pivotData[r] = {};
@@ -90,7 +97,7 @@ export default function PivotTableWidget({ widget }: { widget: AnalyticsTable })
     }
 
     return { rows, cols, data: pivotData, rowTotals, colTotals, grandTotal };
-  }, [investments, widget]);
+  }, [investments, widget, rowCats, colCats]);
 
   const fmt = (widget.metric === 'totalValue' || widget.metric === 'quantity')
     ? (n: number) => Math.round(n).toLocaleString()

@@ -41,11 +41,11 @@ export default function EditWidgetForm({ widgetId, onClose }: Props) {
     widget?.kind === 'chart' ? widget.category : 'group'
   );
   const [metric, setMetric] = useState(widget?.metric ?? 'totalValue');
-  const [rowCategory, setRowCategory] = useState(
-    widget?.kind === 'table' ? widget.rowCategory : 'group'
+  const [rowCategories, setRowCategories] = useState<string[]>(
+    widget?.kind === 'table' ? widget.rowCategories : ['group']
   );
-  const [columnCategory, setColumnCategory] = useState(
-    widget?.kind === 'table' ? widget.columnCategory : 'custody'
+  const [columnCategories, setColumnCategories] = useState<string[]>(
+    widget?.kind === 'table' ? widget.columnCategories : ['custody']
   );
   const [filters, setFilters] = useState<Record<string, string[]>>(
     widget?.filters ?? {}
@@ -92,7 +92,7 @@ export default function EditWidgetForm({ widgetId, onClose }: Props) {
     if (kind === 'chart') {
       updates = { kind: 'chart', chartType, category, metric, filters, sliceLabels, showLegend, labelPosition };
     } else {
-      updates = { kind: 'table', rowCategory, columnCategory, metric, filters };
+      updates = { kind: 'table', rowCategories, columnCategories, metric, filters };
     }
     updateWidget(widgetId, updates);
     onClose();
@@ -165,19 +165,37 @@ export default function EditWidgetForm({ widgetId, onClose }: Props) {
 
         {kind === 'table' && (
           <>
-            <label>Row Category</label>
-            <select value={rowCategory} onChange={(e) => setRowCategory(e.target.value)}>
+            <label>Row Categories</label>
+            <div className="filter-chips">
               {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{categoryLabel(c)}</option>
+                <label key={c} className="chip">
+                  <input
+                    type="checkbox"
+                    checked={rowCategories.includes(c)}
+                    onChange={() => setRowCategories((prev) =>
+                      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
+                    )}
+                  />
+                  {categoryLabel(c)}
+                </label>
               ))}
-            </select>
+            </div>
 
-            <label>Column Category</label>
-            <select value={columnCategory} onChange={(e) => setColumnCategory(e.target.value)}>
+            <label>Column Categories</label>
+            <div className="filter-chips">
               {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{categoryLabel(c)}</option>
+                <label key={c} className="chip">
+                  <input
+                    type="checkbox"
+                    checked={columnCategories.includes(c)}
+                    onChange={() => setColumnCategories((prev) =>
+                      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
+                    )}
+                  />
+                  {categoryLabel(c)}
+                </label>
               ))}
-            </select>
+            </div>
           </>
         )}
 

@@ -52,7 +52,7 @@ export const useStore = create<AppState>()(
       priceSource: 'brapi',
       brapiToken: '',
       activeTab: 'positions',
-      positionColumns: ['name', 'type', 'ticker', 'price', 'qty', 'totalValue', 'pctTotal', 'targetTotal', 'deltaTotal', 'group', 'pctGroup', 'targetGroup', 'deltaGroup', 'subgroup', 'custody'],
+      positionColumns: ['name', 'type', 'ticker', 'price', 'qty', 'totalValue', 'pctTotal', 'targetTotal', 'deltaTotal', 'group', 'pctType', 'targetType', 'deltaType', 'subgroup', 'custody'],
 
       setActiveTab: (tab) => set({ activeTab: tab }),
 

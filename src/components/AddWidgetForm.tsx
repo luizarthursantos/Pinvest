@@ -31,8 +31,8 @@ export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
   const [chartType, setChartType] = useState<'pie' | 'bar'>('pie');
   const [category, setCategory] = useState('group');
   const [metric, setMetric] = useState('totalValue');
-  const [rowCategory, setRowCategory] = useState('group');
-  const [columnCategory, setColumnCategory] = useState('custody');
+  const [rowCategories, setRowCategories] = useState<string[]>(['group']);
+  const [columnCategories, setColumnCategories] = useState<string[]>(['custody']);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [sliceLabels, setSliceLabels] = useState<SliceLabelOption[]>(['percent']);
   const [showLegend, setShowLegend] = useState(true);
@@ -68,7 +68,7 @@ export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
     if (kind === 'chart') {
       widget = { id: uuid(), kind: 'chart', chartType, category, metric, filters, sliceLabels, showLegend, labelPosition };
     } else {
-      widget = { id: uuid(), kind: 'table', rowCategory, columnCategory, metric, filters };
+      widget = { id: uuid(), kind: 'table', rowCategories, columnCategories, metric, filters };
     }
     addWidget(widget);
     onClose();
@@ -141,19 +141,37 @@ export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
 
         {kind === 'table' && (
           <>
-            <label>Row Category</label>
-            <select value={rowCategory} onChange={(e) => setRowCategory(e.target.value)}>
+            <label>Row Categories</label>
+            <div className="filter-chips">
               {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{categoryLabel(c)}</option>
+                <label key={c} className="chip">
+                  <input
+                    type="checkbox"
+                    checked={rowCategories.includes(c)}
+                    onChange={() => setRowCategories((prev) =>
+                      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
+                    )}
+                  />
+                  {categoryLabel(c)}
+                </label>
               ))}
-            </select>
+            </div>
 
-            <label>Column Category</label>
-            <select value={columnCategory} onChange={(e) => setColumnCategory(e.target.value)}>
+            <label>Column Categories</label>
+            <div className="filter-chips">
               {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{categoryLabel(c)}</option>
+                <label key={c} className="chip">
+                  <input
+                    type="checkbox"
+                    checked={columnCategories.includes(c)}
+                    onChange={() => setColumnCategories((prev) =>
+                      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
+                    )}
+                  />
+                  {categoryLabel(c)}
+                </label>
               ))}
-            </select>
+            </div>
           </>
         )}
 

@@ -15,9 +15,9 @@ interface ColumnDef {
 interface RowCtx {
   value: number;
   pctTotal: number;
-  pctGroup: number;
+  pctType: number;
   deltaTotal: number | null;
-  deltaGrp: number | null;
+  deltaType: number | null;
   fmt: (n: number) => string;
   pct: (n: number) => string;
   deltaClass: (n: number) => string;
@@ -45,15 +45,15 @@ const ALL_COLUMNS: ColumnDef[] = [
       : '-',
   },
   { key: 'group', label: 'Group', render: (inv) => inv.group },
-  { key: 'pctGroup', label: '% of Group', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctGroup.toFixed(1)}%` },
+  { key: 'pctType', label: '% of Type', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctType.toFixed(1)}%` },
   {
-    key: 'targetGroup', label: 'Target Group %', className: 'cell-number',
-    render: (inv) => inv.targetGroupWeight != null ? `${inv.targetGroupWeight.toFixed(1)}%` : '-',
+    key: 'targetType', label: 'Target Type %', className: 'cell-number',
+    render: (inv) => inv.targetTypeWeight != null ? `${inv.targetTypeWeight.toFixed(1)}%` : '-',
   },
   {
-    key: 'deltaGroup', label: 'Delta Group', className: 'cell-number',
-    render: (_inv, ctx) => ctx.deltaGrp != null
-      ? <span className={ctx.deltaClass(ctx.deltaGrp)}>{ctx.pct(ctx.deltaGrp)}</span>
+    key: 'deltaType', label: 'Delta Type', className: 'cell-number',
+    render: (_inv, ctx) => ctx.deltaType != null
+      ? <span className={ctx.deltaClass(ctx.deltaType)}>{ctx.pct(ctx.deltaType)}</span>
       : '-',
   },
   { key: 'subgroup', label: 'Subgroup', render: (inv) => inv.subgroup },
@@ -107,10 +107,10 @@ export default function PositionsTab() {
     [investments]
   );
 
-  const groupTotals = useMemo(() => {
+  const typeTotals = useMemo(() => {
     const map: Record<string, number> = {};
     for (const i of investments) {
-      map[i.group] = (map[i.group] || 0) + i.quantity * i.currentPrice;
+      map[i.type] = (map[i.type] || 0) + i.quantity * i.currentPrice;
     }
     return map;
   }, [investments]);
@@ -176,8 +176,8 @@ export default function PositionsTab() {
           <span className="card-value">{investments.length}</span>
         </div>
         <div className="card">
-          <span className="card-label">Groups</span>
-          <span className="card-value">{Object.keys(groupTotals).length}</span>
+          <span className="card-label">Types</span>
+          <span className="card-value">{Object.keys(typeTotals).length}</span>
         </div>
       </div>
 
@@ -242,11 +242,11 @@ export default function PositionsTab() {
               {investments.map((inv) => {
                 const value = inv.quantity * inv.currentPrice;
                 const pctTotal = totalValue > 0 ? (value / totalValue) * 100 : 0;
-                const groupVal = groupTotals[inv.group] || 1;
-                const pctGroup = groupVal > 0 ? (value / groupVal) * 100 : 0;
+                const typeVal = typeTotals[inv.type] || 1;
+                const pctType = typeVal > 0 ? (value / typeVal) * 100 : 0;
                 const deltaTotal = inv.targetTotalWeight != null ? inv.targetTotalWeight - pctTotal : null;
-                const deltaGrp = inv.targetGroupWeight != null ? inv.targetGroupWeight - pctGroup : null;
-                const ctx: RowCtx = { value, pctTotal, pctGroup, deltaTotal, deltaGrp, fmt, pct, deltaClass };
+                const deltaType = inv.targetTypeWeight != null ? inv.targetTypeWeight - pctType : null;
+                const ctx: RowCtx = { value, pctTotal, pctType, deltaTotal, deltaType, fmt, pct, deltaClass };
 
                 return (
                   <tr

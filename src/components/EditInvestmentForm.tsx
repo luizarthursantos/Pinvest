@@ -22,7 +22,7 @@ export default function EditInvestmentForm({ investmentId, onClose }: Props) {
   const [subgroup, setSubgroup] = useState(inv?.subgroup ?? '');
   const [custody, setCustody] = useState(inv?.custody ?? '');
   const [targetTotal, setTargetTotal] = useState(inv?.targetTotalWeight != null ? String(inv.targetTotalWeight) : '');
-  const [targetGroup, setTargetGroup] = useState(inv?.targetGroupWeight != null ? String(inv.targetGroupWeight) : '');
+  const [targetType, setTargetType] = useState(inv?.targetTypeWeight != null ? String(inv.targetTypeWeight) : '');
 
   if (!inv) return null;
 
@@ -40,7 +40,7 @@ export default function EditInvestmentForm({ investmentId, onClose }: Props) {
       subgroup,
       custody,
       targetTotalWeight: targetTotal !== '' ? parseFloat(targetTotal) : undefined,
-      targetGroupWeight: targetGroup !== '' ? parseFloat(targetGroup) : undefined,
+      targetTypeWeight: targetType !== '' ? parseFloat(targetType) : undefined,
     });
     onClose();
   };
@@ -123,12 +123,12 @@ export default function EditInvestmentForm({ investmentId, onClose }: Props) {
           onChange={(e) => setTargetTotal(e.target.value)}
         />
 
-        <label>Target Group Weight (%)</label>
+        <label>Target Type Weight (%)</label>
         <input
           type="number"
           step="0.01"
-          value={targetGroup}
-          onChange={(e) => setTargetGroup(e.target.value)}
+          value={targetType}
+          onChange={(e) => setTargetType(e.target.value)}
         />
 
         <div className="form-actions">

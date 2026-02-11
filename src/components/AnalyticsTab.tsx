@@ -66,7 +66,7 @@ export default function AnalyticsTab() {
                 <span className="widget-title">
                   {w.kind === 'chart'
                     ? `${w.chartType === 'pie' ? 'Pie' : 'Bar'} Chart — ${categoryLabel(w.category)} by ${metricLabel(w.metric)}`
-                    : `Pivot — ${categoryLabel(w.rowCategory)} x ${categoryLabel(w.columnCategory)} (${metricLabel(w.metric)})`}
+                    : `Pivot — ${w.rowCategories.map(categoryLabel).join(' / ')} x ${w.columnCategories.map(categoryLabel).join(' / ')} (${metricLabel(w.metric)})`}
                 </span>
                 {editMode && (
                   <button
