@@ -1,13 +1,23 @@
 import * as XLSX from 'xlsx';
 import { v4 as uuid } from 'uuid';
-import type { Investment, InvestmentType, AnalyticsWidget } from '../types';
+import type { Investment, InvestmentType, AnalyticsWidget, Theme, PriceSource } from '../types';
 
 const EXPORT_COLUMNS = [
   'name', 'type', 'ticker', 'quantity', 'currentPrice', 'manualPrice',
   'group', 'subgroup', 'custody', 'targetTotalWeight', 'targetTypeWeight',
 ];
 
-export function exportToXlsx(investments: Investment[], widgets: AnalyticsWidget[]) {
+export interface ExportSettings {
+  theme: Theme;
+  priceSource: PriceSource;
+  brapiToken: string;
+  positionColumns: string[];
+  groups: string[];
+  subgroups: string[];
+  custodies: string[];
+}
+
+export function exportToXlsx(investments: Investment[], widgets: AnalyticsWidget[], settings: ExportSettings) {
   const rows = investments.map((inv) => ({
     name: inv.name,
     type: inv.type,
@@ -45,12 +55,25 @@ export function exportToXlsx(investments: Investment[], widgets: AnalyticsWidget
     XLSX.utils.book_append_sheet(wb, wsWidgets, 'Widgets');
   }
 
+  const settingsRows = [
+    { key: 'theme', value: settings.theme },
+    { key: 'priceSource', value: settings.priceSource },
+    { key: 'brapiToken', value: settings.brapiToken },
+    { key: 'positionColumns', value: settings.positionColumns.join(',') },
+    { key: 'groups', value: settings.groups.join(',') },
+    { key: 'subgroups', value: settings.subgroups.join(',') },
+    { key: 'custodies', value: settings.custodies.join(',') },
+  ];
+  const wsSettings = XLSX.utils.json_to_sheet(settingsRows, { header: ['key', 'value'] });
+  XLSX.utils.book_append_sheet(wb, wsSettings, 'Settings');
+
   XLSX.writeFile(wb, 'pinvest_investments.xlsx');
 }
 
 export interface ImportResult {
   investments: Investment[];
   widgets: AnalyticsWidget[];
+  settings?: Partial<ExportSettings>;
 }
 
 export function importFromXlsx(file: File): Promise<ImportResult> {
@@ -123,7 +146,27 @@ export function importFromXlsx(file: File): Promise<ImportResult> {
           }
         }
 
-        resolve({ investments, widgets });
+        // Parse settings sheet if it exists
+        let settings: Partial<ExportSettings> | undefined;
+        const settingsIdx = wb.SheetNames.indexOf('Settings');
+        if (settingsIdx >= 0 && wb.Sheets[wb.SheetNames[settingsIdx]]) {
+          const wsSettings = wb.Sheets[wb.SheetNames[settingsIdx]];
+          const sRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(wsSettings);
+          const map: Record<string, string> = {};
+          for (const sr of sRows) {
+            if (sr.key && sr.value != null) map[String(sr.key)] = String(sr.value);
+          }
+          settings = {};
+          if (map.theme === 'light' || map.theme === 'dark') settings.theme = map.theme;
+          if (map.priceSource === 'brapi' || map.priceSource === 'yahoo') settings.priceSource = map.priceSource;
+          if (map.brapiToken) settings.brapiToken = map.brapiToken;
+          if (map.positionColumns) settings.positionColumns = map.positionColumns.split(',').filter(Boolean);
+          if (map.groups) settings.groups = map.groups.split(',').filter(Boolean);
+          if (map.subgroups) settings.subgroups = map.subgroups.split(',').filter(Boolean);
+          if (map.custodies) settings.custodies = map.custodies.split(',').filter(Boolean);
+        }
+
+        resolve({ investments, widgets, settings });
       } catch (err) {
         reject(err);
       }

@@ -36,6 +36,15 @@ interface AppState {
   removeCustody: (name: string) => void;
   importInvestments: (investments: Investment[]) => void;
   importWidgets: (widgets: AnalyticsWidget[]) => void;
+  importSettings: (settings: {
+    theme?: Theme;
+    priceSource?: PriceSource;
+    brapiToken?: string;
+    positionColumns?: string[];
+    groups?: string[];
+    subgroups?: string[];
+    custodies?: string[];
+  }) => void;
   clearAllData: () => void;
   setPositionColumns: (cols: string[]) => void;
 }
@@ -173,6 +182,19 @@ export const useStore = create<AppState>()(
 
       importWidgets: (newWidgets) =>
         set((s) => ({ widgets: [...s.widgets, ...newWidgets] })),
+
+      importSettings: (settings) =>
+        set((s) => {
+          const updates: Partial<AppState> = {};
+          if (settings.theme) updates.theme = settings.theme;
+          if (settings.priceSource) updates.priceSource = settings.priceSource;
+          if (settings.brapiToken != null) updates.brapiToken = settings.brapiToken;
+          if (settings.positionColumns) updates.positionColumns = settings.positionColumns;
+          if (settings.groups) updates.groups = [...new Set([...s.groups, ...settings.groups])];
+          if (settings.subgroups) updates.subgroups = [...new Set([...s.subgroups, ...settings.subgroups])];
+          if (settings.custodies) updates.custodies = [...new Set([...s.custodies, ...settings.custodies])];
+          return updates;
+        }),
 
       clearAllData: () =>
         set({ investments: [], groups: [], subgroups: [], custodies: [], widgets: [] }),
