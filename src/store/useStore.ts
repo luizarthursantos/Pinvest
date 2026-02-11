@@ -201,6 +201,43 @@ export const useStore = create<AppState>()(
 
       setPositionColumns: (cols) => set({ positionColumns: cols }),
     }),
-    { name: 'pinvest-storage' }
+    {
+      name: 'pinvest-storage',
+      version: 1,
+      migrate: (persisted: unknown) => {
+        const state = persisted as Record<string, unknown>;
+        // Migrate old widget format: rowCategory (string) -> rowCategories (string[])
+        if (Array.isArray(state.widgets)) {
+          state.widgets = (state.widgets as Record<string, unknown>[]).map((w) => {
+            if (w.kind === 'table') {
+              const any = w as Record<string, unknown>;
+              if (!Array.isArray(any.rowCategories) && typeof any.rowCategory === 'string') {
+                any.rowCategories = [any.rowCategory];
+                delete any.rowCategory;
+              }
+              if (!Array.isArray(any.columnCategories) && typeof any.columnCategory === 'string') {
+                any.columnCategories = [any.columnCategory];
+                delete any.columnCategory;
+              }
+              // Ensure arrays exist even if both old and new are missing
+              if (!Array.isArray(any.rowCategories)) any.rowCategories = ['group'];
+              if (!Array.isArray(any.columnCategories)) any.columnCategories = ['custody'];
+            }
+            // Migrate old targetGroupWeight -> targetTypeWeight in investments
+            return w;
+          });
+        }
+        if (Array.isArray(state.investments)) {
+          state.investments = (state.investments as Record<string, unknown>[]).map((inv) => {
+            if (inv.targetGroupWeight != null && inv.targetTypeWeight == null) {
+              inv.targetTypeWeight = inv.targetGroupWeight;
+              delete inv.targetGroupWeight;
+            }
+            return inv;
+          });
+        }
+        return state as AppState;
+      },
+    }
   )
 );
