@@ -236,7 +236,7 @@ export const useStore = create<AppState>()(
             return inv;
           });
         }
-        return state as AppState;
+        return state as unknown as AppState;
       },
     }
   )
