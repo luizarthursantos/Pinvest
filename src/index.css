@@ -944,6 +944,31 @@ tbody tr:last-child td {
   cursor: not-allowed;
 }
 
+/* ===== Compact Table Mode ===== */
+.table-compact table {
+  font-size: 0.72rem;
+}
+
+.table-compact th {
+  padding: 4px 6px;
+  font-size: 0.65rem;
+}
+
+.table-compact td {
+  padding: 4px 6px;
+}
+
+.table-compact .badge {
+  font-size: 0.65rem;
+  padding: 1px 5px;
+}
+
+.table-compact .delta-positive,
+.table-compact .delta-negative,
+.table-compact .delta-neutral {
+  padding: 1px 4px;
+}
+
 /* ===== Recharts fix for dark mode ===== */
 [data-theme="dark"] .recharts-text {
   fill: var(--text-secondary);

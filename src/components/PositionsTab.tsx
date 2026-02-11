@@ -89,6 +89,7 @@ export default function PositionsTab() {
   const [editMode, setEditMode] = useState(false);
   const [showColConfig, setShowColConfig] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [compact, setCompact] = useState(false);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const refresh = usePriceRefresh();
@@ -279,26 +280,17 @@ export default function PositionsTab() {
             {refreshing ? 'Refreshing...' : 'Refresh Prices'}
           </button>
           <button
+            className={`btn-secondary ${compact ? 'btn-active' : ''}`}
+            onClick={() => setCompact(!compact)}
+          >
+            Compact
+          </button>
+          <button
             className={`btn-secondary ${editMode ? 'btn-active' : ''}`}
             onClick={() => { setEditMode(!editMode); if (editMode) setShowColConfig(false); }}
           >
             {editMode ? 'Done' : 'Edit'}
           </button>
-        </div>
-      </div>
-
-      <div className="summary-cards">
-        <div className="card">
-          <span className="card-label">Total Value</span>
-          <span className="card-value">{Math.round(totalValue).toLocaleString()}</span>
-        </div>
-        <div className="card">
-          <span className="card-label">Positions</span>
-          <span className="card-value">{investments.length}</span>
-        </div>
-        <div className="card">
-          <span className="card-label">Types</span>
-          <span className="card-value">{Object.keys(typeTotals).length}</span>
         </div>
       </div>
 
@@ -349,7 +341,7 @@ export default function PositionsTab() {
           <p>No investments yet. Click "+ Add" to get started.</p>
         </div>
       ) : (
-        <div className="table-container">
+        <div className={`table-container${compact ? ' table-compact' : ''}`}>
           <table>
             <thead>
               <tr>
