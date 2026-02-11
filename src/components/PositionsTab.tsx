@@ -128,6 +128,61 @@ export default function PositionsTab() {
     [positionColumns]
   );
 
+  const totalsRow = useMemo(() => {
+    const totals: Record<string, number | null> = {};
+    const sumTotalValue = totalValue;
+    totals.totalValue = sumTotalValue;
+    totals.pctTotal = 100;
+    totals.pctType = 100;
+
+    // Sum of all target weights (weighted average doesn't make sense; sum shows allocation)
+    let sumTargetTotal = 0;
+    let hasTargetTotal = false;
+    let sumTargetType = 0;
+    let hasTargetType = false;
+    let sumDailyChangeVal = 0;
+    let hasDailyChangeVal = false;
+
+    for (const inv of investments) {
+      if (inv.targetTotalWeight != null) {
+        sumTargetTotal += inv.targetTotalWeight;
+        hasTargetTotal = true;
+      }
+      if (inv.targetTypeWeight != null) {
+        sumTargetType += inv.targetTypeWeight;
+        hasTargetType = true;
+      }
+      if (inv.dailyChange != null) {
+        sumDailyChangeVal += inv.dailyChange * inv.quantity;
+        hasDailyChangeVal = true;
+      }
+    }
+
+    totals.targetTotal = hasTargetTotal ? sumTargetTotal : null;
+    totals.deltaTotal = hasTargetTotal ? sumTargetTotal - 100 : null;
+    totals.targetType = hasTargetType ? sumTargetType : null;
+    totals.deltaType = hasTargetType ? sumTargetType - 100 : null;
+    totals.dailyChangeVal = hasDailyChangeVal ? sumDailyChangeVal : null;
+
+    // Weighted average daily change %
+    if (sumTotalValue > 0) {
+      let weightedPct = 0;
+      let hasAny = false;
+      for (const inv of investments) {
+        if (inv.dailyChangePercent != null) {
+          const w = (inv.quantity * inv.currentPrice) / sumTotalValue;
+          weightedPct += inv.dailyChangePercent * w;
+          hasAny = true;
+        }
+      }
+      totals.dailyChangePct = hasAny ? weightedPct : null;
+    } else {
+      totals.dailyChangePct = null;
+    }
+
+    return totals;
+  }, [investments, totalValue]);
+
   const toggleColumn = (key: string) => {
     if (positionColumns.includes(key)) {
       setPositionColumns(positionColumns.filter((k) => k !== key));
@@ -239,6 +294,34 @@ export default function PositionsTab() {
               </tr>
             </thead>
             <tbody>
+              <tr className="row-total">
+                {visibleCols.map((col) => {
+                  const TOTAL_KEYS = new Set([
+                    'totalValue', 'pctTotal', 'targetTotal', 'deltaTotal',
+                    'pctType', 'targetType', 'deltaType',
+                    'dailyChangePct', 'dailyChangeVal',
+                  ]);
+                  if (!TOTAL_KEYS.has(col.key)) {
+                    return <td key={col.key} className={col.className}>{col.key === 'name' ? 'Total' : ''}</td>;
+                  }
+                  const val = totalsRow[col.key];
+                  if (val == null) return <td key={col.key} className={col.className}>-</td>;
+                  let content: React.ReactNode;
+                  if (col.key === 'totalValue') {
+                    content = Math.round(val).toLocaleString();
+                  } else if (col.key === 'dailyChangeVal') {
+                    content = <span className={deltaClass(val)}>{Math.round(val).toLocaleString()}</span>;
+                  } else if (col.key === 'dailyChangePct') {
+                    content = <span className={deltaClass(val)}>{pct(val)}</span>;
+                  } else if (col.key === 'deltaTotal' || col.key === 'deltaType') {
+                    content = <span className={deltaClass(val)}>{pct(val)}</span>;
+                  } else {
+                    content = `${val.toFixed(1)}%`;
+                  }
+                  return <td key={col.key} className={col.className}>{content}</td>;
+                })}
+                {editMode && <td />}
+              </tr>
               {investments.map((inv) => {
                 const value = inv.quantity * inv.currentPrice;
                 const pctTotal = totalValue > 0 ? (value / totalValue) * 100 : 0;

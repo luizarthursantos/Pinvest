@@ -560,6 +560,7 @@ tbody tr:last-child td {
 
 .row-total {
   background: var(--bg-secondary);
+  font-weight: 600;
 }
 
 /* ===== Filters ===== */
