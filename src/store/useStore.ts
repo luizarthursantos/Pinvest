@@ -11,7 +11,7 @@ interface AppState {
   theme: Theme;
   priceSource: PriceSource;
   brapiToken: string;
-  activeTab: 'positions' | 'analytics' | 'settings';
+  activeTab: 'positions' | 'analytics' | 'inflow' | 'settings';
   positionColumns: string[];
 
   setActiveTab: (tab: AppState['activeTab']) => void;
