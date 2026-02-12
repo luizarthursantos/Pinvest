@@ -43,10 +43,10 @@ const ALL_COLUMNS: ColumnDef[] = [
     render: (inv) => <span className={`badge badge-${inv.type}`}>{inv.type === 'stock' ? 'Stock' : 'Other'}</span>,
   },
   { key: 'ticker', label: 'Ticker', render: (inv) => inv.ticker || '-' },
-  { key: 'price', label: 'Price', className: 'cell-number', render: (inv, ctx) => ctx.fmt(inv.currentPrice) },
-  { key: 'qty', label: 'Qty', className: 'cell-number', render: (inv) => Math.round(inv.quantity).toLocaleString() },
-  { key: 'totalValue', label: 'Total', className: 'cell-number cell-value', render: (_inv, ctx) => Math.round(ctx.value).toLocaleString() },
-  { key: 'pctTotal', label: '% Total', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctTotal.toFixed(1)}%` },
+  { key: 'price', label: 'Price', className: 'cell-number', render: (inv, ctx) => inv.currentPrice ? ctx.fmt(inv.currentPrice) : '' },
+  { key: 'qty', label: 'Qty', className: 'cell-number', render: (inv) => inv.quantity ? Math.round(inv.quantity).toLocaleString() : '' },
+  { key: 'totalValue', label: 'Total', className: 'cell-number cell-value', render: (_inv, ctx) => ctx.value ? Math.round(ctx.value).toLocaleString() : '' },
+  { key: 'pctTotal', label: '% Total', className: 'cell-number', render: (_inv, ctx) => ctx.pctTotal ? `${ctx.pctTotal.toFixed(1)}%` : '' },
   {
     key: 'targetTotal', label: 'Target Total %', className: 'cell-number',
     render: (inv) => inv.targetTotalWeight != null ? `${inv.targetTotalWeight.toFixed(1)}%` : '-',
@@ -58,7 +58,7 @@ const ALL_COLUMNS: ColumnDef[] = [
       : '-',
   },
   { key: 'group', label: 'Group', render: (inv) => <span className={`badge ${badgeColor(inv.group)}`}>{inv.group}</span> },
-  { key: 'pctType', label: '% Type', className: 'cell-number', render: (_inv, ctx) => `${ctx.pctType.toFixed(1)}%` },
+  { key: 'pctType', label: '% Type', className: 'cell-number', render: (_inv, ctx) => ctx.pctType ? `${ctx.pctType.toFixed(1)}%` : '' },
   {
     key: 'targetType', label: 'Target Type %', className: 'cell-number',
     render: (inv) => inv.targetTypeWeight != null ? `${inv.targetTypeWeight.toFixed(1)}%` : '-',
@@ -75,7 +75,7 @@ const ALL_COLUMNS: ColumnDef[] = [
     key: 'dailyChangePct', label: 'Day %', className: 'cell-number',
     render: (inv, ctx) => {
       const v = inv.dailyChangePercent;
-      if (v == null) return '-';
+      if (v == null || v === 0) return '';
       return <span className={ctx.deltaClass(v)}>{ctx.pct(v)}</span>;
     },
   },
@@ -83,8 +83,9 @@ const ALL_COLUMNS: ColumnDef[] = [
     key: 'dailyChangeVal', label: 'Day', className: 'cell-number',
     render: (inv, ctx) => {
       const v = inv.dailyChange;
-      if (v == null) return '-';
+      if (v == null) return '';
       const totalChange = v * inv.quantity;
+      if (totalChange === 0) return '';
       return <span className={ctx.deltaClass(totalChange)}>{Math.round(totalChange).toLocaleString()}</span>;
     },
   },
@@ -399,7 +400,7 @@ export default function PositionsTab() {
                     return <td key={col.key} className={col.className}>{col.key === 'name' ? 'Total' : ''}</td>;
                   }
                   const val = totalsRow[col.key];
-                  if (val == null) return <td key={col.key} className={col.className}>-</td>;
+                  if (val == null || val === 0) return <td key={col.key} className={col.className}></td>;
                   let content: React.ReactNode;
                   if (col.key === 'totalValue') {
                     content = Math.round(val).toLocaleString();
