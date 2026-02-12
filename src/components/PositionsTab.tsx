@@ -49,25 +49,25 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: 'pctTotal', label: '% Total', className: 'cell-number', render: (_inv, ctx) => ctx.pctTotal ? `${ctx.pctTotal.toFixed(1)}%` : '' },
   {
     key: 'targetTotal', label: 'Target Total %', className: 'cell-number',
-    render: (inv) => inv.targetTotalWeight != null ? `${inv.targetTotalWeight.toFixed(1)}%` : '-',
+    render: (inv) => inv.targetTotalWeight != null ? `${inv.targetTotalWeight.toFixed(1)}%` : '',
   },
   {
     key: 'deltaTotal', label: 'Delta Total', className: 'cell-number',
     render: (_inv, ctx) => ctx.deltaTotal != null
       ? <span className={ctx.deltaClass(ctx.deltaTotal)}>{ctx.pct(ctx.deltaTotal)}</span>
-      : '-',
+      : '',
   },
   { key: 'group', label: 'Group', render: (inv) => <span className={`badge ${badgeColor(inv.group)}`}>{inv.group}</span> },
   { key: 'pctType', label: '% Type', className: 'cell-number', render: (_inv, ctx) => ctx.pctType ? `${ctx.pctType.toFixed(1)}%` : '' },
   {
     key: 'targetType', label: 'Target Type %', className: 'cell-number',
-    render: (inv) => inv.targetTypeWeight != null ? `${inv.targetTypeWeight.toFixed(1)}%` : '-',
+    render: (inv) => inv.targetTypeWeight != null ? `${inv.targetTypeWeight.toFixed(1)}%` : '',
   },
   {
     key: 'deltaType', label: 'Delta Type', className: 'cell-number',
     render: (_inv, ctx) => ctx.deltaType != null
       ? <span className={ctx.deltaClass(ctx.deltaType)}>{ctx.pct(ctx.deltaType)}</span>
-      : '-',
+      : '',
   },
   { key: 'subgroup', label: 'Subgroup', render: (inv) => <span className={`badge ${badgeColor(inv.subgroup)}`}>{inv.subgroup}</span> },
   { key: 'custody', label: 'Custody', render: (inv) => <span className={`badge ${badgeColor(inv.custody)}`}>{inv.custody}</span> },
