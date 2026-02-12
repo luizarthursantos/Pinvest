@@ -190,19 +190,19 @@ export default function PositionsTab() {
     totals.dailyChangeVal = hasDailyChangeVal ? sumDailyChangeVal : null;
 
     // Weighted average daily change %
-    if (sumTotalValue > 0) {
+    {
       let weightedPct = 0;
+      let weightSum = 0;
       let hasAny = false;
       for (const inv of investments) {
-        if (inv.dailyChangePercent != null) {
-          const w = (inv.quantity * inv.currentPrice) / sumTotalValue;
+        if (inv.quantity > 0 && inv.dailyChangePercent != null) {
+          const w = inv.quantity * inv.currentPrice;
           weightedPct += inv.dailyChangePercent * w;
+          weightSum += w;
           hasAny = true;
         }
       }
-      totals.dailyChangePct = hasAny ? weightedPct : null;
-    } else {
-      totals.dailyChangePct = null;
+      totals.dailyChangePct = hasAny && weightSum > 0 ? weightedPct / weightSum : null;
     }
 
     return totals;
