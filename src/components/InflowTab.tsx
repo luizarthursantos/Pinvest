@@ -217,8 +217,9 @@ export default function InflowTab() {
                   cx="50%"
                   cy="50%"
                   outerRadius={90}
-                  label={({ name, percent }) =>
-                    percent > 0.03 ? `${name} ${(percent * 100).toFixed(1)}%` : ''
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  label={(props: any) =>
+                    props.percent > 0.03 ? `${props.name} ${(props.percent * 100).toFixed(1)}%` : ''
                   }
                   labelLine
                 >
