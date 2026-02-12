@@ -50,6 +50,7 @@ export function exportToXlsx(investments: Investment[], widgets: AnalyticsWidget
       sliceLabels: w.kind === 'chart' ? (w.sliceLabels ?? []).join(',') : '',
       showLegend: w.kind === 'chart' ? String(w.showLegend ?? true) : '',
       labelPosition: w.kind === 'chart' ? (w.labelPosition ?? 'inside') : '',
+      favorite: w.favorite ? 'true' : '',
     }));
     const wsWidgets = XLSX.utils.json_to_sheet(widgetRows);
     XLSX.utils.book_append_sheet(wb, wsWidgets, 'Widgets');
@@ -130,6 +131,7 @@ export function importFromXlsx(file: File): Promise<ImportResult> {
                 sliceLabels: sl ? sl.split(',').filter(Boolean) as ('name' | 'value' | 'percent')[] : ['percent'],
                 showLegend: String(wr.showLegend) !== 'false',
                 labelPosition: (String(wr.labelPosition || 'inside') as 'inside' | 'outside'),
+                favorite: String(wr.favorite) === 'true',
               });
             } else if (kind === 'table') {
               const rc = String(wr.rowCategories || wr.rowCategory || 'group');
@@ -141,6 +143,7 @@ export function importFromXlsx(file: File): Promise<ImportResult> {
                 columnCategories: cc.split(',').filter(Boolean),
                 metric: String(wr.metric || 'totalValue'),
                 filters,
+                favorite: String(wr.favorite) === 'true',
               });
             }
           }
