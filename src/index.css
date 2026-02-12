@@ -104,6 +104,7 @@ body {
 .app-nav {
   display: flex;
   gap: 4px;
+  margin-left: auto;
 }
 
 .nav-btn {
