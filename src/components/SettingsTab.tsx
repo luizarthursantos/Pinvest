@@ -1,8 +1,9 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import ListEditor from './ListEditor';
 import { exportToXlsx, importFromXlsx } from '../services/xlsxService';
+import { testBrapiConnection } from '../services/priceService';
 import type { Theme, PriceSource } from '../types';
 
 export default function SettingsTab() {
@@ -17,6 +18,20 @@ export default function SettingsTab() {
 
   const fileRef = useRef<HTMLInputElement>(null);
   const { canInstall, isInstalled, install, isSamsung } = useInstallPrompt();
+  const [testResult, setTestResult] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+
+  const handleTestBrapi = async () => {
+    setTesting(true);
+    setTestResult(null);
+    const result = await testBrapiConnection(brapiToken);
+    setTestResult(result);
+    setTesting(false);
+  };
+
+  const stockTickers = investments
+    .filter((i) => i.type === 'stock' && i.ticker)
+    .map((i) => i.ticker!);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -77,9 +92,25 @@ export default function SettingsTab() {
                 placeholder="Your brapi.dev token"
               />
             </label>
-            <p className="text-muted">
+            <button
+              className="btn-secondary"
+              style={{ marginTop: 8 }}
+              onClick={handleTestBrapi}
+              disabled={testing}
+            >
+              {testing ? 'Testing...' : 'Test BRAPI Connection'}
+            </button>
+            {testResult && (
+              <pre className="test-result">{testResult}</pre>
+            )}
+            <p className="text-muted" style={{ marginTop: 8 }}>
               Get a free token at brapi.dev. Required for price quotes.
             </p>
+            {stockTickers.length > 0 && (
+              <p className="text-muted" style={{ fontSize: '0.7rem' }}>
+                Tickers to fetch: {stockTickers.join(', ')} ({stockTickers.length} stocks)
+              </p>
+            )}
           </div>
         )}
       </div>

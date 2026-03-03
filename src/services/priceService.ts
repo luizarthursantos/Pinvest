@@ -68,6 +68,34 @@ async function fetchYahoo(tickers: string[]): Promise<Record<string, PriceData>>
   return result;
 }
 
+export async function testBrapiConnection(token: string): Promise<string> {
+  const ticker = 'PETR4';
+  const tokenParam = token ? `&token=${encodeURIComponent(token)}` : '';
+  const url = `https://brapi.dev/api/quote/${ticker}?fundamental=false${tokenParam}`;
+  try {
+    const resp = await fetch(url);
+    const status = resp.status;
+    const text = await resp.text();
+    let parsed: unknown;
+    try { parsed = JSON.parse(text); } catch { parsed = text; }
+
+    if (!resp.ok) {
+      return `HTTP ${status}\nURL: ${url}\nResponse: ${JSON.stringify(parsed, null, 2)}`;
+    }
+
+    const data = parsed as Record<string, unknown>;
+    const results = (data.results as Array<Record<string, unknown>>) ?? [];
+    if (results.length === 0) {
+      return `OK (${status}) but no results\nURL: ${url}\nResponse: ${JSON.stringify(parsed, null, 2)}`;
+    }
+
+    const item = results[0];
+    return `OK - ${item.symbol}: R$ ${item.regularMarketPrice}\nChange: ${item.regularMarketChange} (${item.regularMarketChangePercent}%)\nURL: ${url}`;
+  } catch (err) {
+    return `Network error: ${err instanceof Error ? err.message : String(err)}\nURL: ${url}`;
+  }
+}
+
 export async function fetchPrices(
   tickers: string[],
   source: PriceSource,
