@@ -24,7 +24,7 @@ export default function SettingsTab() {
   const handleTestBrapi = async () => {
     setTesting(true);
     setTestResult(null);
-    const result = await testBrapiConnection(brapiToken);
+    const result = await testBrapiConnection(brapiToken, stockTickers);
     setTestResult(result);
     setTesting(false);
   };
