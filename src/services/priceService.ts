@@ -46,29 +46,22 @@ async function fetchBrapi(tickers: string[], token: string): Promise<Record<stri
     brapiTickers.push(stripped);
   }
 
-  // Try batch first
-  try {
-    const resp = await fetch(buildBrapiUrl(brapiTickers, token));
-    if (!resp.ok) throw new Error(`brapi ${resp.status}`);
-    const data = await resp.json();
-    parseBrapiResults(data.results ?? [], tickerMap, result);
-  } catch (err) {
-    console.error('brapi batch fetch error, falling back to individual:', err);
-    // Fallback: fetch each ticker individually
-    for (const ticker of brapiTickers) {
-      try {
-        const resp = await fetch(buildBrapiUrl([ticker], token));
-        if (!resp.ok) {
-          console.warn(`brapi skip ${ticker}: HTTP ${resp.status}`);
-          continue;
-        }
-        const data = await resp.json();
-        parseBrapiResults(data.results ?? [], tickerMap, result);
-      } catch (e) {
-        console.warn(`brapi skip ${ticker}:`, e);
+  // Free tier only supports 1 ticker per request — fetch all in parallel
+  const fetches = brapiTickers.map(async (ticker) => {
+    try {
+      const resp = await fetch(buildBrapiUrl([ticker], token));
+      if (!resp.ok) {
+        console.warn(`brapi skip ${ticker}: HTTP ${resp.status}`);
+        return;
       }
+      const data = await resp.json();
+      parseBrapiResults(data.results ?? [], tickerMap, result);
+    } catch (e) {
+      console.warn(`brapi skip ${ticker}:`, e);
     }
-  }
+  });
+
+  await Promise.all(fetches);
   return result;
 }
 
@@ -99,43 +92,41 @@ async function fetchYahoo(tickers: string[]): Promise<Record<string, PriceData>>
 export async function testBrapiConnection(token: string, tickers?: string[]): Promise<string> {
   const testTickers = tickers && tickers.length > 0 ? tickers : ['PETR4'];
   const lines: string[] = [];
+  lines.push(`Testing ${testTickers.length} ticker(s)...`);
 
-  // Test batch
-  const joined = testTickers.map((t) => stripSaSuffix(t)).join(',');
-  const tokenParam = token ? `&token=${encodeURIComponent(token)}` : '';
-  const url = `https://brapi.dev/api/quote/${joined}?fundamental=false${tokenParam}`;
-  lines.push(`Tickers: ${testTickers.join(', ')}`);
-  lines.push(`URL: ${url}`);
+  const ok: string[] = [];
+  const failed: string[] = [];
 
-  try {
-    const resp = await fetch(url);
-    const status = resp.status;
-    const text = await resp.text();
-    let parsed: unknown;
-    try { parsed = JSON.parse(text); } catch { parsed = text; }
-
-    if (!resp.ok) {
-      lines.push(`BATCH FAILED: HTTP ${status}`);
-      lines.push(`Response: ${JSON.stringify(parsed, null, 2)}`);
-      return lines.join('\n');
+  // Fetch each ticker individually (free tier limit)
+  const fetches = testTickers.map(async (t) => {
+    const stripped = stripSaSuffix(t);
+    const tokenParam = token ? `&token=${encodeURIComponent(token)}` : '';
+    const url = `https://brapi.dev/api/quote/${stripped}?fundamental=false${tokenParam}`;
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) {
+        failed.push(`${t}: HTTP ${resp.status}`);
+        return;
+      }
+      const data = await resp.json();
+      const item = data.results?.[0];
+      if (item && typeof item.regularMarketPrice === 'number') {
+        ok.push(`${item.symbol}: R$ ${item.regularMarketPrice} (${item.regularMarketChangePercent}%)`);
+      } else {
+        failed.push(`${t}: no price data`);
+      }
+    } catch (err) {
+      failed.push(`${t}: ${err instanceof Error ? err.message : String(err)}`);
     }
+  });
 
-    const data = parsed as Record<string, unknown>;
-    const results = (data.results as Array<Record<string, unknown>>) ?? [];
-    lines.push(`HTTP ${status} - ${results.length}/${testTickers.length} results`);
+  await Promise.all(fetches);
 
-    const found = new Set<string>();
-    for (const item of results) {
-      found.add(String(item.symbol).toUpperCase());
-      lines.push(`  ${item.symbol}: R$ ${item.regularMarketPrice} (${item.regularMarketChangePercent}%)`);
-    }
-
-    const missing = testTickers.filter((t) => !found.has(stripSaSuffix(t).toUpperCase()));
-    if (missing.length > 0) {
-      lines.push(`Missing: ${missing.join(', ')}`);
-    }
-  } catch (err) {
-    lines.push(`Network error: ${err instanceof Error ? err.message : String(err)}`);
+  lines.push(`OK: ${ok.length}/${testTickers.length}`);
+  for (const line of ok) lines.push(`  ${line}`);
+  if (failed.length > 0) {
+    lines.push(`Failed: ${failed.length}`);
+    for (const line of failed) lines.push(`  ${line}`);
   }
 
   return lines.join('\n');
