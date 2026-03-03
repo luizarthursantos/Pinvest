@@ -23,10 +23,9 @@ async function fetchBrapi(tickers: string[], token: string): Promise<Record<stri
   }
 
   const joined = brapiTickers.join(',');
-  const headers: Record<string, string> = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const tokenParam = token ? `&token=${encodeURIComponent(token)}` : '';
   try {
-    const resp = await fetch(`https://brapi.dev/api/quote/${joined}?fundamental=false`, { headers });
+    const resp = await fetch(`https://brapi.dev/api/quote/${joined}?fundamental=false${tokenParam}`);
     if (!resp.ok) throw new Error(`brapi ${resp.status}`);
     const data = await resp.json();
     for (const item of data.results ?? []) {
