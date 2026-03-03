@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import AddWidgetForm from './AddWidgetForm';
+import EditWidgetForm from './EditWidgetForm';
 import ChartWidget from './ChartWidget';
 import PivotTableWidget from './PivotTableWidget';
 
@@ -11,26 +12,50 @@ function metricLabel(m: string) {
     case 'currentPrice': return 'Price';
     case 'pctTotal': return '% of Total';
     case 'pctGroup': return '% of Group';
+    case 'dailyReturn': return 'Daily Return';
+    case 'dailyReturnPct': return 'Daily Return %';
     default: return m;
   }
 }
 
 function categoryLabel(c: string) {
-  return c.charAt(0).toUpperCase() + c.slice(1);
+  switch (c) {
+    case 'name': return 'Name';
+    case 'ticker': return 'Ticker';
+    default: return c.charAt(0).toUpperCase() + c.slice(1);
+  }
 }
 
 export default function AnalyticsTab() {
   const widgets = useStore((s) => s.widgets);
   const removeWidget = useStore((s) => s.removeWidget);
+  const moveWidget = useStore((s) => s.moveWidget);
+  const toggleFavorite = useStore((s) => s.toggleWidgetFavorite);
   const [showAdd, setShowAdd] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editWidgetId, setEditWidgetId] = useState<string | null>(null);
 
   return (
     <div className="analytics-tab">
       <div className="tab-header">
         <h2>Analytics</h2>
-        <button className="btn-primary" onClick={() => setShowAdd(true)}>
-          + Add Widget
-        </button>
+        <div className="tab-actions">
+          <button
+            className={`btn-secondary btn-sq ${editMode ? 'btn-active' : ''}`}
+            title={editMode ? 'Done' : 'Edit'}
+            onClick={() => setEditMode(!editMode)}
+          >
+            {editMode
+              ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+            }
+          </button>
+          {editMode && (
+            <button className="btn-primary btn-sq" title="Add Widget" onClick={() => setShowAdd(true)}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {widgets.length === 0 ? (
@@ -39,25 +64,35 @@ export default function AnalyticsTab() {
         </div>
       ) : (
         <div className="widgets-grid">
-          {widgets.map((w) => (
-            <div key={w.id} className="widget-card">
+          {widgets.map((w, wi) => (
+            <div
+              key={w.id}
+              className={`widget-card${editMode ? ' clickable-card' : ''}`}
+              onClick={editMode ? () => setEditWidgetId(w.id) : undefined}
+            >
               <div className="widget-header">
                 <span className="widget-title">
+                  {w.favorite && <span className="fav-star">{'\u2605'} </span>}
                   {w.kind === 'chart'
                     ? `${w.chartType === 'pie' ? 'Pie' : 'Bar'} Chart — ${categoryLabel(w.category)} by ${metricLabel(w.metric)}`
-                    : `Pivot — ${categoryLabel(w.rowCategory)} x ${categoryLabel(w.columnCategory)} (${metricLabel(w.metric)})`}
+                    : `Pivot — ${w.rowCategories.map(categoryLabel).join(' / ')} x ${w.columnCategories.map(categoryLabel).join(' / ')} (${metricLabel(w.metric)})`}
                 </span>
-                <button
-                  className="btn-icon btn-danger"
-                  title="Remove widget"
-                  onClick={() => removeWidget(w.id)}
-                >
-                  &#10005;
-                </button>
+                {editMode && (
+                  <div className="widget-actions">
+                    <button className={`btn-icon${w.favorite ? ' btn-fav-active' : ''}`} title={w.favorite ? 'Remove from Positions' : 'Show in Positions'}
+                      onClick={(e) => { e.stopPropagation(); toggleFavorite(w.id); }}>{w.favorite ? '\u2605' : '\u2606'}</button>
+                    <button className="btn-icon" title="Move up" disabled={wi === 0}
+                      onClick={(e) => { e.stopPropagation(); moveWidget(w.id, -1); }}>&#9650;</button>
+                    <button className="btn-icon" title="Move down" disabled={wi === widgets.length - 1}
+                      onClick={(e) => { e.stopPropagation(); moveWidget(w.id, 1); }}>&#9660;</button>
+                    <button className="btn-icon btn-danger" title="Remove widget"
+                      onClick={(e) => { e.stopPropagation(); removeWidget(w.id); }}>&#10005;</button>
+                  </div>
+                )}
               </div>
               <div className="widget-body">
                 {w.kind === 'chart' ? (
-                  <ChartWidget widget={w} />
+                  <ChartWidget widget={w} interactive={editMode} />
                 ) : (
                   <PivotTableWidget widget={w} />
                 )}
@@ -68,6 +103,7 @@ export default function AnalyticsTab() {
       )}
 
       {showAdd && <AddWidgetForm onClose={() => setShowAdd(false)} />}
+      {editWidgetId && <EditWidgetForm widgetId={editWidgetId} onClose={() => setEditWidgetId(null)} />}
     </div>
   );
 }

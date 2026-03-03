@@ -11,12 +11,18 @@ export interface Investment {
   group: string;
   subgroup: string;
   custody: string;
-  targetTotalWeight: number;
-  targetGroupWeight: number;
+  targetTotalWeight?: number;
+  targetTypeWeight?: number;
   lastPriceUpdate?: string;
+  dailyChange?: number;
+  dailyChangePercent?: number;
 }
 
 export type PriceSource = 'brapi' | 'yahoo';
+
+export type SliceLabelOption = 'name' | 'value' | 'percent';
+
+export type LabelPosition = 'inside' | 'outside';
 
 export interface AnalyticsChart {
   id: string;
@@ -25,15 +31,20 @@ export interface AnalyticsChart {
   category: string;
   metric: string;
   filters: Record<string, string[]>;
+  sliceLabels?: SliceLabelOption[];
+  showLegend?: boolean;
+  labelPosition?: LabelPosition;
+  favorite?: boolean;
 }
 
 export interface AnalyticsTable {
   id: string;
   kind: 'table';
-  rowCategory: string;
-  columnCategory: string;
+  rowCategories: string[];
+  columnCategories: string[];
   metric: string;
   filters: Record<string, string[]>;
+  favorite?: boolean;
 }
 
 export type AnalyticsWidget = AnalyticsChart | AnalyticsTable;

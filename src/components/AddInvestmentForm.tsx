@@ -17,7 +17,7 @@ export default function AddInvestmentForm({ onClose }: { onClose: () => void }) 
   const [subgroup, setSubgroup] = useState('');
   const [custody, setCustody] = useState('');
   const [targetTotal, setTargetTotal] = useState('');
-  const [targetGroup, setTargetGroup] = useState('');
+  const [targetType, setTargetType] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,8 +33,8 @@ export default function AddInvestmentForm({ onClose }: { onClose: () => void }) 
       group,
       subgroup,
       custody,
-      targetTotalWeight: parseFloat(targetTotal) || 0,
-      targetGroupWeight: parseFloat(targetGroup) || 0,
+      targetTotalWeight: targetTotal !== '' ? parseFloat(targetTotal) : undefined,
+      targetTypeWeight: targetType !== '' ? parseFloat(targetType) : undefined,
     });
     onClose();
   };
@@ -81,7 +81,7 @@ export default function AddInvestmentForm({ onClose }: { onClose: () => void }) 
         <label>Quantity</label>
         <input
           type="number"
-          step="0.0001"
+          step="any"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           required
@@ -122,12 +122,12 @@ export default function AddInvestmentForm({ onClose }: { onClose: () => void }) 
           onChange={(e) => setTargetTotal(e.target.value)}
         />
 
-        <label>Target Group Weight (%)</label>
+        <label>Target Type Weight (%)</label>
         <input
           type="number"
           step="0.01"
-          value={targetGroup}
-          onChange={(e) => setTargetGroup(e.target.value)}
+          value={targetType}
+          onChange={(e) => setTargetType(e.target.value)}
         />
 
         <div className="form-actions">

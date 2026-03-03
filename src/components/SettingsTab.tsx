@@ -1,8 +1,55 @@
+import { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
+import { useInstallPrompt } from '../hooks/useInstallPrompt';
+import ListEditor from './ListEditor';
+import { exportToXlsx, importFromXlsx } from '../services/xlsxService';
+import { testBrapiConnection } from '../services/priceService';
 import type { Theme, PriceSource } from '../types';
 
 export default function SettingsTab() {
-  const { theme, setTheme, priceSource, setPriceSource } = useStore();
+  const {
+    theme, setTheme, priceSource, setPriceSource, brapiToken, setBrapiToken,
+    groups, addGroup, renameGroup, removeGroup,
+    subgroups, addSubgroup, renameSubgroup, removeSubgroup,
+    custodies, addCustody, renameCustody, removeCustody,
+    investments, widgets, importInvestments, importWidgets, importSettings,
+    clearAllData, positionColumns,
+  } = useStore();
+
+  const fileRef = useRef<HTMLInputElement>(null);
+  const { canInstall, isInstalled, install, isSamsung } = useInstallPrompt();
+  const [testResult, setTestResult] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+
+  const handleTestBrapi = async () => {
+    setTesting(true);
+    setTestResult(null);
+    const result = await testBrapiConnection(brapiToken, stockTickers);
+    setTestResult(result);
+    setTesting(false);
+  };
+
+  const stockTickers = investments
+    .filter((i) => i.type === 'stock' && i.ticker)
+    .map((i) => i.ticker!);
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const result = await importFromXlsx(file);
+      importInvestments(result.investments);
+      if (result.widgets.length > 0) importWidgets(result.widgets);
+      if (result.settings) importSettings(result.settings);
+      const parts = [`${result.investments.length} investments`];
+      if (result.widgets.length > 0) parts.push(`${result.widgets.length} widgets`);
+      if (result.settings) parts.push('settings');
+      alert(`Imported ${parts.join(', ')}.`);
+    } catch {
+      alert('Failed to import file.');
+    }
+    if (fileRef.current) fileRef.current.value = '';
+  };
 
   return (
     <div className="settings-tab">
@@ -30,8 +77,113 @@ export default function SettingsTab() {
         </label>
         <p className="text-muted">
           {priceSource === 'brapi'
-            ? 'BRAPI provides real-time stock quotes. Use tickers like PETR4, VALE3, AAPL.'
+            ? 'BRAPI provides real-time stock quotes. Use tickers like PETR4, VALE3, ITUB4 (without .SA).'
             : 'Yahoo Finance provides global stock data. Use tickers like AAPL, GOOGL, PETR4.SA.'}
+        </p>
+
+        {priceSource === 'brapi' && (
+          <div className="setting-token">
+            <label className="setting-row">
+              <span>BRAPI Token</span>
+              <input
+                type="text"
+                value={brapiToken}
+                onChange={(e) => setBrapiToken(e.target.value.trim())}
+                placeholder="Your brapi.dev token"
+              />
+            </label>
+            <button
+              className="btn-secondary"
+              style={{ marginTop: 8 }}
+              onClick={handleTestBrapi}
+              disabled={testing}
+            >
+              {testing ? 'Testing...' : 'Test BRAPI Connection'}
+            </button>
+            {testResult && (
+              <pre className="test-result">{testResult}</pre>
+            )}
+            <p className="text-muted" style={{ marginTop: 8 }}>
+              Get a free token at brapi.dev. Required for price quotes.
+            </p>
+            {stockTickers.length > 0 && (
+              <p className="text-muted" style={{ fontSize: '0.7rem' }}>
+                Tickers to fetch: {stockTickers.join(', ')} ({stockTickers.length} stocks)
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="settings-section">
+        <h3>Import / Export</h3>
+        <div className="setting-buttons">
+          <button className="btn-secondary" onClick={() => exportToXlsx(investments, widgets, {
+            theme, priceSource, brapiToken, positionColumns, groups, subgroups, custodies,
+          })}>
+            Export XLSX
+          </button>
+          <button className="btn-secondary" onClick={() => fileRef.current?.click()}>
+            Import XLSX
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".xlsx,.xls"
+            style={{ display: 'none' }}
+            onChange={handleImport}
+          />
+        </div>
+        <p className="text-muted">
+          Export your investments to a spreadsheet or import from one.
+        </p>
+      </div>
+
+      <div className="settings-section">
+        <h3>Manage Lists</h3>
+        <ListEditor title="Groups" items={groups} onRename={renameGroup} onRemove={removeGroup} onAdd={addGroup} />
+        <ListEditor title="Subgroups" items={subgroups} onRename={renameSubgroup} onRemove={removeSubgroup} onAdd={addSubgroup} />
+        <ListEditor title="Custodies" items={custodies} onRename={renameCustody} onRemove={removeCustody} onAdd={addCustody} />
+      </div>
+
+      <div className="settings-section">
+        <h3>Install App</h3>
+        {isInstalled ? (
+          <p className="text-muted">Pinvest is already installed on your device.</p>
+        ) : canInstall ? (
+          <>
+            <button className="btn-primary" onClick={install}>
+              Install Pinvest
+            </button>
+            <p className="text-muted">
+              Install Pinvest as an app on your device for quick access and offline use.
+            </p>
+          </>
+        ) : isSamsung ? (
+          <p className="text-muted">
+            To install on Samsung Internet: tap the menu icon (three lines), then "Add page to" &rarr; "Home screen".
+          </p>
+        ) : (
+          <p className="text-muted">
+            To install, open Pinvest in Chrome or Edge and use the browser's install option, or add to home screen on mobile.
+          </p>
+        )}
+      </div>
+
+      <div className="settings-section settings-danger">
+        <h3>Danger Zone</h3>
+        <button
+          className="btn-primary btn-danger-fill"
+          onClick={() => {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+              clearAllData();
+            }
+          }}
+        >
+          Clear All Data
+        </button>
+        <p className="text-muted">
+          Permanently deletes all investments, groups, subgroups, custodies, and widgets.
         </p>
       </div>
     </div>

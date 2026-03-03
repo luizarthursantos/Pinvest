@@ -21,8 +21,8 @@ export default function EditInvestmentForm({ investmentId, onClose }: Props) {
   const [group, setGroup] = useState(inv?.group ?? '');
   const [subgroup, setSubgroup] = useState(inv?.subgroup ?? '');
   const [custody, setCustody] = useState(inv?.custody ?? '');
-  const [targetTotal, setTargetTotal] = useState(String(inv?.targetTotalWeight ?? ''));
-  const [targetGroup, setTargetGroup] = useState(String(inv?.targetGroupWeight ?? ''));
+  const [targetTotal, setTargetTotal] = useState(inv?.targetTotalWeight != null ? String(inv.targetTotalWeight) : '');
+  const [targetType, setTargetType] = useState(inv?.targetTypeWeight != null ? String(inv.targetTypeWeight) : '');
 
   if (!inv) return null;
 
@@ -39,8 +39,8 @@ export default function EditInvestmentForm({ investmentId, onClose }: Props) {
       group,
       subgroup,
       custody,
-      targetTotalWeight: parseFloat(targetTotal) || 0,
-      targetGroupWeight: parseFloat(targetGroup) || 0,
+      targetTotalWeight: targetTotal !== '' ? parseFloat(targetTotal) : undefined,
+      targetTypeWeight: targetType !== '' ? parseFloat(targetType) : undefined,
     });
     onClose();
   };
@@ -82,7 +82,7 @@ export default function EditInvestmentForm({ investmentId, onClose }: Props) {
         <label>Quantity</label>
         <input
           type="number"
-          step="0.0001"
+          step="any"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           required
@@ -123,12 +123,12 @@ export default function EditInvestmentForm({ investmentId, onClose }: Props) {
           onChange={(e) => setTargetTotal(e.target.value)}
         />
 
-        <label>Target Group Weight (%)</label>
+        <label>Target Type Weight (%)</label>
         <input
           type="number"
           step="0.01"
-          value={targetGroup}
-          onChange={(e) => setTargetGroup(e.target.value)}
+          value={targetType}
+          onChange={(e) => setTargetType(e.target.value)}
         />
 
         <div className="form-actions">

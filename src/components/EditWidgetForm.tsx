@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { v4 as uuid } from 'uuid';
 import { useStore } from '../store/useStore';
 import type { AnalyticsWidget, SliceLabelOption, LabelPosition } from '../types';
 
@@ -27,18 +26,41 @@ function categoryLabel(c: string) {
   }
 }
 
-export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
-  const { groups, subgroups, custodies, investments, addWidget } = useStore();
-  const [kind, setKind] = useState<'chart' | 'table'>('chart');
-  const [chartType, setChartType] = useState<'pie' | 'bar'>('pie');
-  const [category, setCategory] = useState('group');
-  const [metric, setMetric] = useState('totalValue');
-  const [rowCategories, setRowCategories] = useState<string[]>(['group']);
-  const [columnCategories, setColumnCategories] = useState<string[]>(['custody']);
-  const [filters, setFilters] = useState<Record<string, string[]>>({});
-  const [sliceLabels, setSliceLabels] = useState<SliceLabelOption[]>(['percent']);
-  const [showLegend, setShowLegend] = useState(true);
-  const [labelPosition, setLabelPosition] = useState<LabelPosition>('inside');
+interface Props {
+  widgetId: string;
+  onClose: () => void;
+}
+
+export default function EditWidgetForm({ widgetId, onClose }: Props) {
+  const widget = useStore((s) => s.widgets.find((w) => w.id === widgetId));
+  const { groups, subgroups, custodies, investments, updateWidget } = useStore();
+
+  const [kind] = useState<'chart' | 'table'>(widget?.kind ?? 'chart');
+  const [chartType, setChartType] = useState<'pie' | 'bar'>(
+    widget?.kind === 'chart' ? widget.chartType : 'pie'
+  );
+  const [category, setCategory] = useState(
+    widget?.kind === 'chart' ? widget.category : 'group'
+  );
+  const [metric, setMetric] = useState(widget?.metric ?? 'totalValue');
+  const [rowCategories, setRowCategories] = useState<string[]>(
+    widget?.kind === 'table' ? widget.rowCategories : ['group']
+  );
+  const [columnCategories, setColumnCategories] = useState<string[]>(
+    widget?.kind === 'table' ? widget.columnCategories : ['custody']
+  );
+  const [filters, setFilters] = useState<Record<string, string[]>>(
+    widget?.filters ?? {}
+  );
+  const [sliceLabels, setSliceLabels] = useState<SliceLabelOption[]>(
+    widget?.kind === 'chart' ? (widget.sliceLabels ?? ['percent']) : ['percent']
+  );
+  const [showLegend, setShowLegend] = useState(
+    widget?.kind === 'chart' ? (widget.showLegend ?? true) : true
+  );
+  const [labelPosition, setLabelPosition] = useState<LabelPosition>(
+    widget?.kind === 'chart' ? (widget.labelPosition ?? 'inside') : 'inside'
+  );
 
   const filterOptions: Record<string, string[]> = useMemo(() => ({
     group: groups,
@@ -64,25 +86,27 @@ export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
     });
   };
 
+  if (!widget) return null;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    let widget: AnalyticsWidget;
+    let updates: Partial<AnalyticsWidget>;
     if (kind === 'chart') {
-      widget = { id: uuid(), kind: 'chart', chartType, category, metric, filters, sliceLabels, showLegend, labelPosition };
+      updates = { kind: 'chart', chartType, category, metric, filters, sliceLabels, showLegend, labelPosition };
     } else {
-      widget = { id: uuid(), kind: 'table', rowCategories, columnCategories, metric, filters };
+      updates = { kind: 'table', rowCategories, columnCategories, metric, filters };
     }
-    addWidget(widget);
+    updateWidget(widgetId, updates);
     onClose();
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <form className="modal modal-wide" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
-        <h2>Add Widget</h2>
+        <h2>Edit Widget</h2>
 
         <label>Widget Type</label>
-        <select value={kind} onChange={(e) => setKind(e.target.value as 'chart' | 'table')}>
+        <select value={kind} disabled>
           <option value="chart">Chart</option>
           <option value="table">Pivot Table</option>
         </select>
@@ -232,7 +256,7 @@ export default function AddWidgetForm({ onClose }: { onClose: () => void }) {
 
         <div className="form-actions">
           <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn-primary">Add</button>
+          <button type="submit" className="btn-primary">Save</button>
         </div>
       </form>
     </div>
