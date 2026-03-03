@@ -88,8 +88,9 @@ export const useStore = create<AppState>()(
       updatePrices: (prices) =>
         set((s) => ({
           investments: s.investments.map((i) => {
-            if (i.type === 'stock' && i.ticker && prices[i.ticker] !== undefined) {
-              const pd = prices[i.ticker];
+            const key = i.ticker?.toUpperCase();
+            if (i.type === 'stock' && key && prices[key] !== undefined) {
+              const pd = prices[key];
               return {
                 ...i,
                 currentPrice: pd.price,
